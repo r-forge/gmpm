@@ -1,0 +1,34 @@
+export(
+       "gmp",
+       "gmpCreate",
+       "gmpCtrl"
+       )
+
+exportMethods(
+    "fitOnce",
+    "getMainSummary",
+    "getNExceeding",
+    "getPermMx",
+    "getPValue",
+    "getRegSummary",
+    "gmpCoef",
+    "getModelFrame",
+    "getFactorCodes",
+    "gmpFit",
+    "mdTest",
+    "origFit",
+    "permSpace",
+    "permute",
+    "show",
+    "summary"
+)
+
+exportClasses(
+    "Gmp",
+     "Gmp.glm",
+     "Gmp.mul",
+     "GmpSummary",
+     "Gmp.user",
+     "Mdtest",
+     "Mdtest.sum" 
+)
