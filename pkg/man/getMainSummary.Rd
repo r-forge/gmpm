@@ -1,38 +1,28 @@
 \name{getMainSummary}
 \alias{getMainSummary}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\title{Get Main Summary of Results for GMPM object}
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+Provides a main summary of p-values for a \code{Gmp} object.
 }
 \usage{
 getMainSummary(x, byCovar = FALSE)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{ ~~Describe \code{x} here~~ }
-  \item{byCovar}{ ~~Describe \code{byCovar} here~~ }
+  \item{x}{A \code{Gmp} object}
+
+  \item{byCovar}{A boolean (TRUE, FALSE) value indicating whether
+    results are to be given for each individual covariate separately, or
+    for all covariates combined.  Default is FALSE.}
+
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+This function will intelligently determine whether a single-parameter or
+multi-parameter test is needed for each independent variable in the
+experiment, and perform a corresponding test.
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+  A list of data.frame objects.  In the normal case, a list with a
+  single element with the main results.  In the multinomial case, a list
+  with as many elements as there are comparisons among DV levels.
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
-}
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
-\examples{
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-%\keyword{ ~kwd1 }
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\seealso{ \code{\link{getRegSummary}} }

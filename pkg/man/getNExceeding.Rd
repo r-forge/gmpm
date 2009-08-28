@@ -1,38 +1,23 @@
 \name{getNExceeding}
 \alias{getNExceeding}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\title{Get Number of Permutation Runs Equalling or Exceeding Original Value}
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Calculates the number of permutation runs that yielded parameter
+  estimates equalling or exceeding the original value.
 }
 \usage{
 getNExceeding(x, y)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{ ~~Describe \code{x} here~~ }
-  \item{y}{ ~~Describe \code{y} here~~ }
+  \item{x}{A \code{Gmp} object}
+  \item{y}{A single number or vector of numbers indexing the columns in
+    the permutation matrix for which the calculation is to be performed.}
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+  If you want p-values, use \code{getPValue} instead.
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+  A vector indicating the number of runs with values greater than or
+  exceeding the value from the original labeling.
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
-}
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
-\examples{
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-%\keyword{ ~kwd1 }
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\seealso{ \code{\link{getPValue}} }

@@ -3,19 +3,32 @@
 \alias{GmpSummary-class}
 \alias{initialize,GmpSummary-method}
 \alias{show,GmpSummary-method}
+\title{Class GmpSummary}
+\description{Summary information for a GMPM.}
 
-\title{Class "GmpSummary" ~~~ }
-\description{	 ~~ A concise (1-5 lines) description of what the class is.  ~~}
 \section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("GmpSummary", gmpInfo, gmpMainSum, gmpRegSum)}.
-	 ~~ describe objects here ~~ 
+
+  Objects can be created by a call to \code{\link{summary}}.
+
 }
+
 \section{Slots}{
-	 \describe{
-    \item{\code{gmpInfo}:}{Object of class \code{"list"} ~~ }
-    \item{\code{gmpMainSum}:}{Object of class \code{"list"} ~~ }
-    \item{\code{gmpRegSum}:}{Object of class \code{"list"} ~~ }
-    \item{\code{showReg}:}{Object of class \code{"logical"} ~~ }
+  \describe{
+
+    \item{\code{gmpInfo}:}{Object of class \code{"list"}; basic
+      information about the model.}
+    
+    \item{\code{gmpMainSum}:}{Object of class \code{"list"}; the main
+      summary of p-values, including multiparameter tests where
+      appropriate.}
+    
+    \item{\code{gmpRegSum}:}{Object of class \code{"list"}; optional
+    summary of the regression, not included by default (see
+    \sQuote{showReg} below).}
+    
+    \item{\code{showReg}:}{Object of class \code{"logical"} whether or
+      not the regression summary is to be calculated and displayed.}
+    
   }
 }
 \section{Methods}{
@@ -24,17 +37,7 @@ Objects can be created by calls of the form \code{new("GmpSummary", gmpInfo, gmp
     \item{show}{\code{signature(object = "GmpSummary")}: ... }
 	 }
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ }
-
-% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-%	~~objects to See Also as \code{\link{~~fun~~}}, ~~~
-%	or \code{\linkS4class{CLASSNAME}} for links to other classes
-}
-\examples{
-showClass("GmpSummary")
+  \code{\link{gmp}}, \code{\link{Gmp-class}}
 }
 \keyword{classes}

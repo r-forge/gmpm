@@ -111,7 +111,7 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
 }
 
 \value{
-  Each function returns a \alias{Gmp} object.
+  Each function returns a \code{\linkS4class{Gmp}} object.
 }
 
 \references{ Barr, D. J. (in preparation).  Generalized Multilevel
@@ -119,37 +119,34 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
 
 \author{Dale J. Barr <dale.barr@ucr.edu>}
 
-\seealso{\code{\link{kb07}}}
+\seealso{
+
+  See example \code{\link{kb07}} for an example of usage with
+  binomial data.
+
+  \code{\linkS4class{Gmp}}
+}
 
 \examples{
-# example using visual-world data with time as a continuous covariate
-data(kb07)
+# create a df for a within-subject design
+# with no main effect
+df1 <- data.frame(SubjID=rep(1:20,each=2),
+                  A=factor(rep(c("a1","a2"),times=10)),
+                  Y=rnorm(40)*2)
 
-# first let's fit the data using a binomial model
-#
-kb07.binom.gmp <- gmpCreate(cbind(T,NT) ~ t1*Speaker*Load | SubjID,
-                       "binomial", kb07, ivars=c("Speaker","Load"))
+# parametric and non-parametric analyses should look similar
+df1.gmp <- gmp(Y ~ A | SubjID, gaussian, df1, c("A"))
 
-# you will need to increase the number of runs (maxruns)
-# to, say, 999 to get sensible results
+# parametric and non-parametric analyses should look similar
+summary(df1.gmp)
+summary(aov(Y ~ A + Error(SubjID), df1))
 
-kb07.binom.gmp <- gmpFit(kb07.binom.gmp, gmpCtrl(maxruns=19))
+# now create horrible dependencies by reduplicating observations
+df2 <- rbind(df1,df1,df1,df1,df1,df1,df1,df1,df1)
 
-summary(kb07.binom.gmp)
-
-# now let's do a more powerful multinomial analysis
-# where we break out looks to blank regions and blinks
-# into a separate "junk" category (X).  Region O
-# ('other') will be our baseline category.  The main
-# comparison, then is Target vs Other (TvO in the gmp output)
-
-kb07.mnom.gmp <- gmpCreate(cbind(O,T,X) ~ t1*Speaker*Load | SubjID,
-                     "multinomial", kb07, ivars=c("Speaker","Load"))
-
-# again, you'll need to increase maxruns to get something sensible
-kb07.mnom.gmp <- gmpFit(kb07.mnom.gmp, gmpCtrl(maxruns=19))
-
-summary(kb07.mnom.gmp)
+# parametric analysis more likely to give Type I error
+summary(aov(Y ~ A + Error(SubjID), df2))
+df2.gmp <- gmp(Y ~ A | SubjID, gaussian, df2, c("A"))
 }
 \keyword{htest}
 \keyword{robust}

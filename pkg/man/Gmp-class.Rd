@@ -1,62 +1,125 @@
 \name{Gmp-class}
 \docType{class}
 \alias{Gmp-class}
+\alias{Gmp.glm-class}
+\alias{Gmp.mul-class}
+\alias{Gmp.user-class}
 \alias{initialize,Gmp-method}
-\alias{mdTest,Gmp,vector-method}
-\alias{mdTest,Gmp,matrix-method}
+\alias{initialize,Gmp.glm-method}
+\alias{initialize,Gmp.mul-method}
+\alias{initialize,Gmp.user-method}
 \alias{show,Gmp-method}
 \alias{summary,Gmp-method}
 
-\title{Class "Gmp" ~~~ }
-\description{	 ~~ A concise (1-5 lines) description of what the class is.  ~~}
-\section{Objects from the Class}{A virtual Class: No objects may be created from it.}
+\title{GMPM Model Classes}
+\description{S4 objects containing information about GMPMs.}
+\section{Objects from the Class}{
+
+  The class \sQuote{Gmp} is a virtual class: No objects may be created
+  from it.  The function \code{\link{gmpCreate}} chooses the type of
+  class to be created, either \code{Gmp.glm}, \code{Gmp.mul}, or
+  \code{Gmp.user}, depending on the value passed to the \sQuote{family}
+  argument of the function \code{\link{gmpCreate}} or \code{\link{gmp}}.
+
+  Objects of type \code{Gmp.glm} fit models using the underlying
+  regression function \code{\link{glm}}.
+
+  Object of type \code{gmp.mul} fit models using the underlying function
+  \code{\link{multinom}} from package \pkg{nnet}.
+
+  The class \code{Gmp.user} is intended to allow users to specify their
+  own regression functions (e.g., calls to nonlinear regression), but
+  has not yet been implemented.
+
+}
 \section{Slots}{
-	 \describe{
-    \item{\code{df1}:}{Object of class \code{"data.frame"} ~~ }
-    \item{\code{dform}:}{Object of class \code{"formula"} ~~ }
-    \item{\code{mform}:}{Object of class \code{"formula"} ~~ }
-    \item{\code{munit}:}{Object of class \code{"character"} ~~ }
-    \item{\code{nunits}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{gmpControl}:}{Object of class \code{"list"} ~~ }
-    \item{\code{fitcall}:}{Object of class \code{"list"} ~~ }
-    \item{\code{famtype}:}{Object of class \code{"character"} ~~ }
-    \item{\code{DVname}:}{Object of class \code{"character"} ~~ }
-    \item{\code{ivix}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{IVinfo}:}{Object of class \code{"data.frame"} ~~ }
-    \item{\code{nWithin}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{nBetween}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{ivWithin}:}{Object of class \code{"character"} ~~ }
-    \item{\code{ivBetween}:}{Object of class \code{"character"} ~~ }
-    \item{\code{ivars}:}{Object of class \code{"vector"} ~~ }
-    \item{\code{IVcoef}:}{Object of class \code{"list"} ~~ }
-    \item{\code{covars}:}{Object of class \code{"character"} ~~ }
+  \describe{
+
+    \item{\code{df1}:}{a \code{"data.frame"} object containing the model
+      frame}
+    
+    \item{\code{dform}:}{\code{"formula"} specifying the structure of
+    the model without the multilevel grouping factor.  This is necessary
+    for passing along to the underlying regression function}
+    
+    \item{\code{mform}:}{The full \code{"formula"} describing the model,
+    including the multilevel grouping factor}
+    
+    \item{\code{munit}:}{Object of type \code{"character"} identifying
+    the name of the variable in the model frame that defines the
+    multilevel units}
+    
+    \item{\code{nunits}:}{An integer corresponding to the number of
+    multilevel units in the model frame}
+    
+    \item{\code{gmpControl}:}{A \code{"list"} with control arguments for
+    the fitting function (see \code{\link{gmp}})}
+    
+    \item{\code{fitcall}:}{The call to the underlying function, cast as
+    a \code{"list"} }
+    
+    \item{\code{famtype}:}{A human-readable redescription of the family
+    of model}
+    
+    \item{\code{DVname}:}{A string specifying the name of the dependent
+    variable}
+    
+    \item{\code{ivix}:}{A numeric vector giving the indices of the
+    permuted variables in the permutation matrix (i.e., variables for
+    which p-values are obtained).}
+    
+    \item{\code{IVinfo}:}{Human-readable information about the
+    independent variables (IVs)}
+    
+    \item{\code{nWithin}:}{Number of \sQuote{within unit} IVs}
+    
+    \item{\code{nBetween}:}{Number of \sQuote{between unit} IVs}
+    
+    \item{\code{ivWithin}:}{vector of names of within-unit IVs}
+    
+    \item{\code{ivBetween}:}{vector of names of between-unit IVs}
+    
+    \item{\code{ivars}:}{vector of names of all IVs}
+    
+    \item{\code{IVcoef}:}{A \code{"list"} of all IVs and the names in
+    the regression output}
+    
+    \item{\code{covars}:}{A vector of strings identifying the covariates
+    in the model (anything on the right hand side of the formula that is
+    not an IV is assumed to be a covariate)}
+    
     \item{\code{coefTerms}:}{Object of class \code{"list"} ~~ }
-    \item{\code{psBetween}:}{Object of class \code{"data.frame"} ~~ }
-    \item{\code{psWithin}:}{Object of class \code{"list"} ~~ }
-    \item{\code{pspace}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{pmx}:}{Object of class \code{"matrix"} ~~ }
-    \item{\code{nCellsPerUnit}:}{Object of class \code{"numeric"} ~~ }
-    \item{\code{ncomp}:}{Object of class \code{"numeric"} ~~ }
+    
+    \item{\code{psBetween}:}{A \code{"data.frame"} giving the
+    permutation scheme for between-subject variables}
+    
+    \item{\code{psWithin}:}{A \code{"list"} giving the permutation
+    scheme for within-subject variables}
+    
+    \item{\code{pspace}:}{Number of possible permutations}
+    
+    \item{\code{pmx}:}{The permutation matrix (or array, for Gmp.mul objects)}
+    
+    \item{\code{nCellsPerUnit}:}{Number of within-subject cells per
+      sampling unit}
+    
+    \item{\code{ncomp}:}{Number of Monte Carlo runs completed}
+  
+    \item{\code{convergence}:}{A logical vector specifying whether or
+      not a given run converged (\code{Gmp.mul} only)}
+    
   }
 }
 \section{Methods}{
   \describe{
     \item{initialize}{\code{signature(.Object = "Gmp")}: ... }
-    \item{mdTest}{\code{signature(x = "Gmp", y = "vector")}: ... }
-    \item{mdTest}{\code{signature(x = "Gmp", y = "matrix")}: ... }
     \item{show}{\code{signature(object = "Gmp")}: ... }
     \item{summary}{\code{signature(object = "Gmp")}: ... }
+    \item{mdTest}{\code{signature(x = "Gmp", y = "vector")}: ... }
+    \item{mdTest}{\code{signature(x = "Gmp", y = "matrix")}: ... }    
 	 }
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ }
-
 \seealso{
-%	~~objects to See Also as \code{\link{~~fun~~}}, ~~~
-%	or \code{\linkS4class{CLASSNAME}} for links to other classes
-}
-\examples{
-showClass("Gmp")
+  \code{\link{gmp}}
 }
 \keyword{classes}

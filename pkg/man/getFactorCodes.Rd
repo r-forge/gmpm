@@ -1,13 +1,12 @@
 \name{getFactorCodes}
 \alias{getFactorCodes}
 \title{Get Factor Codes from Gmp Object}
-\description{}
-
 \usage{
 getFactorCodes(object)
 }
 \description{
-  Retrieves the factor codes from a Gmp object.
+  Retrieves the factor codes for independent variables from a Gmp
+  object.  The underlying coding scheme for GMPMs is deviation coding.
 }
 \arguments{
   \item{object}{A Gmp object, created by \link{gmpCreate} or \link{gmp}.}

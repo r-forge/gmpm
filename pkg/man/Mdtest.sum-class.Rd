@@ -2,23 +2,10 @@
 \docType{class}
 \alias{Mdtest.sum-class}
 
-\title{Class "Mdtest.sum" ~~~ }
-\description{	 ~~ A concise (1-5 lines) description of what the class is.  ~~}
+\title{Summary of Mdtest Object}
+\description{The result of a call to \code{summary(Mdtest)}}
 \section{Objects from the Class}{A virtual Class: No objects may be created from it.}
 \section{Methods}{
 No methods defined with class "Mdtest.sum" in the signature.
-}
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ }
-
-% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%	~~objects to See Also as \code{\link{~~fun~~}}, ~~~
-%	or \code{\linkS4class{CLASSNAME}} for links to other classes
-}
-\examples{
-showClass("Mdtest.sum")
 }
 \keyword{classes}

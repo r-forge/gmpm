@@ -1,37 +1,24 @@
 \name{fitOnce}
 \alias{fitOnce}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\alias{fitOnce,Gmp-method}
+\alias{fitOnce,Gmp.mul-method}
+\title{Call Underlying Regression Function on Original Data}
+
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  \code{fitOnce} calls the underlying regression function for a GMPM
+  object on the stored model frame and returns the results of the call.
 }
 \usage{
 fitOnce(object)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{object}{ ~~Describe \code{object} here~~ }
-}
-\details{
-  ~~ If necessary, more details than the description above ~~
+  \item{object}{A \code{\linkS4class{Gmp}} object}
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
-}
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
 
- ~Make other sections like Warning with \section{Warning }{....} ~
+  The results of a call to the underlying function.  This depends on the
+  type of Gmp object (\code{\link{multinom}} for Gmp.mul objects,
+  \code{\link{glm}} otherwise).
+
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
-\examples{
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-%\keyword{ ~kwd1 }
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\seealso{ \code{\link{glm}}, \code{\link{multinom}}, \code{\link{gmp}} }

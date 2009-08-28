@@ -6,18 +6,19 @@
   Generalized Multilevel Permutation Models (GMPMs)
 }
 \description{
-  Functions for fitting GMPMs.  Documentation currently under
-  construction (sorry).
+  Functions and S4 objects related to creating and fitting Generalized
+  Multilevel Permutation Models (GMPMs).
 }
 \details{
 \tabular{ll}{
 Package: \tab gmpm\cr
 Type: \tab Package\cr
-Version: \tab 1.0-2\cr
+Version: \tab 1.0-3\cr
 Date: \tab 2009-08-27\cr
-License: \tab What license is it under?\cr
+License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 Depends: \tab methods\cr
+Suggests: \tab nnet\cr
 }
 }
 \author{
@@ -27,10 +28,6 @@ Depends: \tab methods\cr
 Barr, D. J. (in preparation).  Generalized Multilevel
 Permutation Models.
 }
-
-%~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
-%~~ the R documentation directory ~~
-
 \keyword{ package }
 \keyword{htest}
 \keyword{robust}
