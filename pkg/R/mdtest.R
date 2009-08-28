@@ -13,19 +13,13 @@ setClass("Mdtest.sum",
 
 setGeneric(
            name="mdTest",
-           def=function(x, y, ...){standardGeneric("mdTest")}
+           def=function(x, y){standardGeneric("mdTest")}
            )
 
 setGeneric(
-           name="getResults",
+           name=".getResults",
            def=function(x, ix, result, nSection=1){
-             standardGeneric("getResults")}
-           )
-
-setGeneric(
-           name=".mdTestCalc",
-           def=function(x, pmx0, coef0, index) {
-             standardGeneric(".mdTestCalc")}
+             standardGeneric(".getResults")}
            )
 
 setMethod("show",
@@ -83,21 +77,7 @@ setMethod("mdTest",
             xmdt <- new("Mdtest")
             xmdt@nSections <- 1
             xmdt@mdsections[["Main Results"]] <-
-              .mdTestCalc(xmdt, getPermMx(x), gmpCoef(x), index)
-            return(xmdt)
-          }
-          )
-
-setMethod("mdTest",
-          signature(x = "Gmp", y="matrix"),
-          function(x, y, coef0, index) {
-           ##print("~~~ in mdTest (Gmp, matrix) ~~~")            
-            xmdt <- new("Mdtest")
-            xmdt@nSections <- 1
-            xmdt@mdsections[["Main Results"]] <-
-              .mdTestCalc(xmdt, y, coef0, index)
-            ###print("... exiting mdTest (Gmp, matrix) ~~~")
-            
+              .mdTestCalc(getPermMx(x), index)
             return(xmdt)
           }
           )
@@ -115,14 +95,25 @@ setMethod("mdTest",
               sTitle <- paste(dimnames(x@pmx)[["dv"]][i],
                               "versus", DVlevels[1], sep=" ")
               xmdt@mdsections[[sTitle]] <-
-                .mdTestCalc(xmdt, x@pmx[,i,], x@coef0[i,], index)
+                .mdTestCalc(x@pmx[,i,], index)
             }
                                         ##print("... exiting mdTest (Gmp.mul, vector) ~~~")
             return(xmdt)
           }
           )
 
-setMethod("getResults",
+setMethod("mdTest",
+          signature(x = "matrix"),
+          function(x, y) {
+            index <- y
+            xmdt <- new("Mdtest")
+            xmdt@nSections <- 1
+            xmdt@mdsections[["Main Results"]] <-
+              .mdTestCalc(x, index)
+            return(xmdt)
+          })
+
+setMethod(".getResults",
           signature(x = "Mdtest"),
           function(x, ix, result, nSection=1) {
             return(x@mdsections[[nSection]][[ix]][[result]])
@@ -130,10 +121,7 @@ setMethod("getResults",
           )
                  
 
-setMethod(".mdTestCalc",
-          signature(x = "Mdtest"),
-          function(x, pmx0, coef0, index) {
-                                        ##print("~~~ .mdTestCalc ~~~")
+.mdTestCalc <- function(pmx0, index) {
 
             # internal function to perform mdTests
             # first parse the arguments
@@ -145,7 +133,7 @@ setMethod(".mdTestCalc",
               if (is.character(index)) {
                 # search first among IVs
                 sstr <- index
-                index <- match(sstr, names(coef0), 0)
+                index <- match(sstr, colnames(pmx0), 0)
                 index <- index[index > 0]
                 mlist <- list(index)
                 # later: search among factors
@@ -167,7 +155,7 @@ setMethod(".mdTestCalc",
               index <- mlist[[j]]
               if (is.character(index)) {
                 sstr <- index
-                cfnames <- names(coef0)
+                cfnames <- colnames(pmx0)
                 if (sum(sstr %in% cfnames) < length(sstr)) {
                   print(cfnames)
                   stop("Names '",
@@ -175,7 +163,7 @@ setMethod(".mdTestCalc",
                        "' from index list element #", j,
                        " were not found in original coefficients.")
                 }
-                index <- match(sstr, names(coef0))
+                index <- match(sstr, colnames(pmx0))
               } else {
               }
               
@@ -229,8 +217,6 @@ setMethod(".mdTestCalc",
               }
             }
 
-            #print(str(mdr))
-            #print("... exiting .mdTestCalc ...")
             return(mdr)
           }
-          )
+

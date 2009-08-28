@@ -35,7 +35,7 @@ setGeneric(name=".mainSumProc",
            })
 
 setGeneric(name=".regSumProc",
-           def=function(x, pmx, index, includeCovars=TRUE) {
+           def=function(x, pmx, index) {
              standardGeneric(".regSumProc")
            })
 
@@ -45,7 +45,7 @@ setGeneric(name="getMainSummary",
            })
 
 setGeneric(name="getRegSummary",
-           def=function(x, includeCovars=TRUE) {
+           def=function(x) {
              standardGeneric("getRegSummary")
            })
 

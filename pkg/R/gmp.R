@@ -103,7 +103,7 @@ setMethod("testDV",
               tname <- paste(colnames(ff$faclist)[j], ":", newDVname, sep="")
               mlist[[tname]] <- ctest
             }
-            return(mdTest(x, mx, mx[1,], mlist))
+            return(mdTest(mx, mlist))
           })
 
 setMethod(".getDVlevels",
@@ -299,7 +299,7 @@ setMethod(".prepareMainSum",
 
 setMethod(".regSumProc",
           signature(x="Gmp"),
-          function(x, pmx, index, includeCovars=TRUE) {
+          function(x, pmx, index) {
             #print("~~~ in .regSumProc ~~~")
             coef0 <- pmx[1,]
             ctest <- 1:length(coef0) %in% index
@@ -330,15 +330,15 @@ setMethod(".regSumProc",
 
 setMethod("getRegSummary",
           signature(x="Gmp"),
-          function(x, includeCovars=TRUE) {
-            ff <- list(.regSumProc(x, x@pmx, x@ivix, includeCovars))
+          function(x) {
+            ff <- list(.regSumProc(x, x@pmx, x@ivix))
             names(ff) <- "Main Regression"
             return(ff)
           })
 
 setMethod("getRegSummary",
           signature(x="Gmp.mul"),
-          function(x, includeCovars=TRUE) {
+          function(x) {
             #print("~~~ in getRegSummary (Gmp.mul) ~~~")
             mlist <- list()
             DVlevels <- .getDVlevels(x)
@@ -346,7 +346,7 @@ setMethod("getRegSummary",
             mnames <- paste(DVlevels[2:length(DVlevels)], DVlevels[1],
                   sep=" versus ")
             for (i in 1:nDVlevels) {
-              mlist[[i]] <- .regSumProc(x, x@pmx[,i,], x@ivix, includeCovars)
+              mlist[[i]] <- .regSumProc(x, x@pmx[,i,], x@ivix)
             }
             names(mlist) <- mnames
             #print("... exiting getMainSummary (Gmp.mul) ...")
@@ -368,10 +368,10 @@ setMethod(".mainSumProc",
               cvars <- .getPredictorsFromFaclist(x, faclist, allvars, nTests, j)
 
               if (length(cvars) > 1) {
-                mdt <- mdTest(x, pmx, coef0, cvars)
-                nge[j] <- getResults(mdt, 1, "nge")
-                pval[j] <- getResults(mdt, 1, "pval")
-                mcoef[j] <- paste(getResults(mdt, 1, "ix"), collapse=",", sep="")
+                mdt <- mdTest(pmx, cvars)
+                nge[j] <- .getResults(mdt, 1, "nge")
+                pval[j] <- .getResults(mdt, 1, "pval")
+                mcoef[j] <- paste(.getResults(mdt, 1, "ix"), collapse=",", sep="")
               } else {
                 nge[j] <- getNExceeding(pmx, cvars[1])
                 pval[j] <- getPValue(pmx, cvars[1])
