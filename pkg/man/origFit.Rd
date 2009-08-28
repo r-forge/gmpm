@@ -1,5 +1,6 @@
 \name{origFit}
 \alias{origFit}
+\alias{origFit,Gmp-method}
 \title{Get Original Regression Fit}
 \description{
 Get the regression fit to the data as originally labeled.

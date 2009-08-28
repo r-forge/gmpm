@@ -1,5 +1,6 @@
 \name{getPermMx}
 \alias{getPermMx}
+\alias{getPermMx,Gmp-method}
 \title{Get the Permutation Matrix from a GMPM object}
 \description{
 Retrieves the permutation matrix from a Gmp object.

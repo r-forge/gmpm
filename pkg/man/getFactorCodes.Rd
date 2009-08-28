@@ -1,5 +1,6 @@
 \name{getFactorCodes}
 \alias{getFactorCodes}
+\alias{getFactorCodes,Gmp-method}
 \title{Get Factor Codes from Gmp Object}
 \usage{
 getFactorCodes(object)

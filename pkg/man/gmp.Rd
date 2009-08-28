@@ -2,6 +2,7 @@
 \alias{gmp}
 \alias{gmpCreate}
 \alias{gmpFit}
+\alias{gmpFit,Gmp-method}
 \title{Creating and Fitting Generalized Multilevel Permutation Models (GMPMs)}
 \description{
 \code{gmpCreate} creates a GMPM object without performing permutation runs.

@@ -1,5 +1,6 @@
 \name{permSpace}
 \alias{permSpace}
+\alias{permSpace,Gmp-method}
 \title{Calculate the Number of Possible Permutations}
 \description{
 Calculates the number of possible permutation based on an analysis of

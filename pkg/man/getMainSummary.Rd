@@ -1,5 +1,7 @@
 \name{getMainSummary}
 \alias{getMainSummary}
+\alias{getMainSummary,Gmp-method}
+\alias{getMainSummary,Gmp.mul-method}
 \title{Get Main Summary of Results for GMPM object}
 \description{
 Provides a main summary of p-values for a \code{Gmp} object.

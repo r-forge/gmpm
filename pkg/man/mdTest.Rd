@@ -3,6 +3,7 @@
 \alias{mdTest,Gmp,vector-method}
 \alias{mdTest,Gmp.mul,vector-method}
 \alias{mdTest,matrix-method}
+\alias{mdTest,matrix,ANY-method}
 \title{Mahalanobis Distance Test for GMPMs}
 \description{
 Performs multiparameter tests on GMPM objects (or matrices) using

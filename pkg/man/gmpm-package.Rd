@@ -13,7 +13,7 @@
 \tabular{ll}{
 Package: \tab gmpm\cr
 Type: \tab Package\cr
-Version: \tab 1.0-3\cr
+Version: \tab 0.1-4\cr
 Date: \tab 2009-08-27\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr

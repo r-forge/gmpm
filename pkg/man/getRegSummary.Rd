@@ -1,5 +1,7 @@
 \name{getRegSummary}
 \alias{getRegSummary}
+\alias{getRegSummary,Gmp-method}
+\alias{getRegSummary,Gmp.mul-method}
 \title{Get Regression Summary from GMPM}
 \description{
   Creates a summary of the regression analysis from a \code{Gmp} object,

@@ -1,5 +1,7 @@
 \name{getNExceeding}
 \alias{getNExceeding}
+\alias{getNExceeding,Gmp-method}
+\alias{getNExceeding,matrix-method}
 \title{Get Number of Permutation Runs Equalling or Exceeding Original Value}
 \description{
   Calculates the number of permutation runs that yielded parameter
@@ -9,7 +11,7 @@
 getNExceeding(x, y)
 }
 \arguments{
-  \item{x}{A \code{Gmp} object}
+  \item{x}{A \code{Gmp} object or a permutation matrix}
   \item{y}{A single number or vector of numbers indexing the columns in
     the permutation matrix for which the calculation is to be performed.}
 }

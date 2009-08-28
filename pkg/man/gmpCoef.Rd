@@ -1,5 +1,6 @@
 \name{gmpCoef}
 \alias{gmpCoef}
+\alias{gmpCoef,Gmp-method}
 \title{Get Parameter Estimates from Original Fit}
 \description{
   Retrieve the parameter estimates from a regression fit to the data

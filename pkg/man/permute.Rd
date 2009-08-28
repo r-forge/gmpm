@@ -1,5 +1,6 @@
 \name{permute}
 \alias{permute}
+\alias{permute,Gmp-method}
 \title{Randomly Permute the Model Frame}
 \description{
 Randomly re-labels the data according to a multilevel relabeling scheme
