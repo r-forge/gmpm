@@ -84,15 +84,15 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
   below).
 
   The right hand side of the formula specifies the predictors in the
-  regression model, using standard R format (see \alias{glm} for further
-  information).  The predictors can include both design variables (IVs)
-  and covariates.  Any IVs to be randomized must be identified in the
-  \sQuote{ivars} option; all other variables are assumed to be
-  covariates, and will not be randomized.  All IVs will be treated as
-  categorical factors; continuous IVs are not allowed.  The IVs are
-  internally coded using \sQuote{deviation} coding, such that the codes
-  sum to zero.  The function \code{\link{getFactorCodes}} can be used to
-  retrieve this internal coding.
+  regression model, using standard R format (see \code{\link{glm}} for
+  further information).  The predictors can include both design
+  variables (IVs) and covariates.  Any IVs to be randomized must be
+  identified in the \sQuote{ivars} option; all other variables are
+  assumed to be covariates, and will not be randomized.  All IVs will be
+  treated as categorical factors; continuous IVs are not allowed.  The
+  IVs are internally coded using \sQuote{deviation} coding, such that
+  the codes sum to zero.  The function \code{\link{getFactorCodes}} can
+  be used to retrieve this internal coding.
 
   The \sQuote{family} option specifies the type of dependent variable.
   This option determines which of various regression subroutines are
