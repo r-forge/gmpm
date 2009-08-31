@@ -37,13 +37,13 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 
 <p>The gmpm package provides a comprehensive framework for performing permutation tests using regression on multilevel experimental data.  GMPMs can be used to analyze categorical, count, and continuous data on its natural scale.</p>
 
-#<?php if ($handle=fopen('http://'.$domain.'/export/projtitl.php?group_name='.$group_name,'r')){
-#$contents = '';
-#while (!feof($handle)) {
-#	$contents .= fread($handle, 8192);
-#}
-#fclose($handle);
-#echo $contents; } ?>
+//<?php if ($handle=fopen('http://'.$domain.'/export/projtitl.php?group_name='.$group_name,'r')){
+//$contents = '';
+//while (!feof($handle)) {
+//	$contents .= fread($handle, 8192);
+//}
+//fclose($handle);
+//echo $contents; } ?>
 
 <!-- end of project description -->
 
