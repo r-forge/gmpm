@@ -37,14 +37,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 
 <p>The gmpm package provides a comprehensive framework for performing permutation tests using regression on multilevel experimental data.  GMPMs can be used to analyze categorical, count, and continuous data on its natural scale.</p>
 
-//<?php if ($handle=fopen('http://'.$domain.'/export/projtitl.php?group_name='.$group_name,'r')){
-//$contents = '';
-//while (!feof($handle)) {
-//	$contents .= fread($handle, 8192);
-//}
-//fclose($handle);
-//echo $contents; } ?>
-
 <!-- end of project description -->
 
 <p>The package <i>gmpm</i> can be installed from the R command line using the following syntax:</p>
@@ -57,7 +49,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 
   <p>Please see the <a href="https://r-forge.r-project.org/forum/?group_id=512">forums</a> for news/discussion.  If you encounter problems, please submit a report in the "bugs" forum.</p>
 
-<p> You can find the <strong>project summary page</strong> <a href="http://<?php echo $domain; ?>/projects/<?php echo $group_name; ?>/"><strong>here</strong></a>. </p>
+  <p> You can find the <strong>project summary page</strong> <a href="http://r-forge.r-project.org/projects/gmpm"><strong>here</strong></a>. </p>
 
 </body>
 </html>
