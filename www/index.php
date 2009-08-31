@@ -53,7 +53,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 
   <p>To get started with <i>gmpm</i>, please see the package help documentation for the function <i>gmp</i>.  If you are interested in using GMPM to analyze visual-world eyetracking data, please see the example <i>kb07</i> in the package (from the command line in R, type <code>?kb07</code>).</p>
 
-  <p>New features will be added soon.  If you want to receive email updates, please subscribe to the <a href="https://r-forge.r-project.org/news/?group_id=512">'news' mailing list</a>.</p>
+  <p>New features will be added soon.  If you want to receive email updates, please subscribe to the <a href="https://lists.r-forge.r-project.org/cgi-bin/mailman/listinfo/gmpm-news">'news' mailing list</a>.</p>
 
   <p>Please see the <a href="https://r-forge.r-project.org/forum/?group_id=512">forums</a> for news/discussion.  If you encounter problems, please submit a report in the "bugs" forum.</p>
 
