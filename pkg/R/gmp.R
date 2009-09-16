@@ -28,9 +28,8 @@ setMethod(".getFactorLabelsFromFit",
               nform <- paste(lhs, "~", object@ivars[i], sep="")
               fcall$formula <- nform
               if (object@famtype == "multinomial") {
-                sink(".multinom.txt")
-                nn1 <- colnames(coef(eval(as.call(fcall))))
-                sink(NULL)
+                tryCatch({sink(".multinom.txt"); nn1 <- colnames(coef(eval(as.call(fcall))))},
+                         finally=sink(NULL))
               } else {
                 nn1 <- names(coef(eval(as.call(fcall))))
               }
@@ -550,6 +549,7 @@ setMethod(".reportProgress",
             }
             cat(sprintf("%02dm:", floor(remn/60)))
             cat(sprintf("%02ds", round(remn %% 60)), "left\n")
+            flush.console()
           }
           )
 
@@ -570,9 +570,8 @@ setMethod(".createPermMx",
             nameObject <- deparse(substitute(x))
             
             x@pmx <- array(dim=c(maxruns+1, dim(x@coef0)[1], dim(x@coef0)[2]))
-            sink(".multinom.txt")
-            f0 <- origFit(x)
-            sink(NULL)
+            tryCatch({sink(".multinom.txt");
+                      f0 <- origFit(x)}, finally=sink(NULL))
             x@pmx[1,,] <-coef(f0)
               
             dimnames(x@pmx) <- list(run=1:(maxruns+1),
