@@ -1,3 +1,26 @@
+setMethod(".initFinal",
+          signature(object="Gmp"),
+          function(object) {            
+            return(object)
+          })
+
+setMethod(".initFinal",
+          signature(object="Gmp.mul"),
+          function(object) {
+
+          # make sure that if it is a single variable, it is coded as a factor
+            if (length(grep("cbind", object@DVname))==0) {
+              if (!is.matrix(object@df1[,object@DVname])) {
+                if (!is.factor(object@df1[,object@DVname])) {
+                  object@df1[,object@DVname] <- factor(object@df1[,object@DVname])
+                  warning("Converting '", object@DVname, "' to a factor")
+                } else {}
+              } else {}
+            } else {}
+            
+            return(object)
+          })
+
 setMethod("getModelFrame",
           signature(object="Gmp"),
           function(object) {
@@ -28,8 +51,7 @@ setMethod(".getFactorLabelsFromFit",
               nform <- paste(lhs, "~", object@ivars[i], sep="")
               fcall$formula <- nform
               if (object@famtype == "multinomial") {
-                tryCatch({sink(".multinom.txt"); nn1 <- colnames(coef(eval(as.call(fcall))))},
-                         finally=sink(NULL))
+                capture.output(nn1 <- colnames(coef(eval(as.call(fcall)))))
               } else {
                 nn1 <- names(coef(eval(as.call(fcall))))
               }
@@ -570,8 +592,7 @@ setMethod(".createPermMx",
             nameObject <- deparse(substitute(x))
             
             x@pmx <- array(dim=c(maxruns+1, dim(x@coef0)[1], dim(x@coef0)[2]))
-            tryCatch({sink(".multinom.txt");
-                      f0 <- origFit(x)}, finally=sink(NULL))
+            capture.output(f0 <- origFit(x))
             x@pmx[1,,] <-coef(f0)
               
             dimnames(x@pmx) <- list(run=1:(maxruns+1),
@@ -968,9 +989,7 @@ setMethod("fitOnce",
           function(object)
           {
                                         ##print("~~~ in fitOnce (Gmp) ~~~")
-            sink(".multinom.txt")
-            fit1 <- eval(as.call(object@fitcall))
-            sink(NULL)
+            capture.output(fit1 <- eval(as.call(object@fitcall)))
             if (!is.null(fit1$convergence)) {
               if (fit1$convergence == 1) {
                 cat("Warning: multinom function did not converge.\n",

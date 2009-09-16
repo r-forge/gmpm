@@ -84,6 +84,7 @@ gmpCreate <- function(formula, family, data=parent.frame(), ivars=c(),
   .checkMultilevel(x)
   .getDesign(x)
   x@fitcall <- .buildFitCall(x, ocall=match.call(expand.dots=TRUE))
+  x <- .initFinal(x)  
   x@IVcoef <- .getFactorLabelsFromFit(x)
   
   .preparePermScheme(x)

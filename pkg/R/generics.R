@@ -1,3 +1,7 @@
+setGeneric(name=".initFinal",
+           def=function(object) {
+             standardGeneric(".initFinal")})
+
 setGeneric(name="getModelFrame",
            def=function(object) {
              standardGeneric("getModelFrame")})
