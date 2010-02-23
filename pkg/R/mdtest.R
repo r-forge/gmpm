@@ -70,10 +70,11 @@ setMethod("summary",
           )
 
 setMethod("mdTest",
-          signature(x = "Gmp", y="vector"),
+          signature(x = "GMPM", y="vector"),
           function(x, y) {
+            stop("Sorry... this function not yet implemented.  Use the matrix version instead.")
             index <- y
-            ###print("~~~ in mdTest (Gmp, vector) ~~~")            
+            ###print("~~~ in mdTest (GMPM, vector) ~~~")            
             xmdt <- new("Mdtest")
             xmdt@nSections <- 1
             xmdt@mdsections[["Main Results"]] <-
@@ -83,10 +84,10 @@ setMethod("mdTest",
           )
 
 setMethod("mdTest",
-          signature(x = "Gmp.mul", y="vector"),
+          signature(x = "GMPM.mul", y="vector"),
           function(x, y) {
             index <- y
-                                        ##print("~~~ in mdTest (Gmp.mul, vector) ~~~")
+                                        ##print("~~~ in mdTest (GMPM.mul, vector) ~~~")
             xmdt <- new("Mdtest")
             DVlevels <- levels(x@df1[,x@DVname])
             nDVlevels <- length(DVlevels)
@@ -97,7 +98,7 @@ setMethod("mdTest",
               xmdt@mdsections[[sTitle]] <-
                 .mdTestCalc(x@pmx[,i,], index)
             }
-                                        ##print("... exiting mdTest (Gmp.mul, vector) ~~~")
+                                        ##print("... exiting mdTest (GMPM.mul, vector) ~~~")
             return(xmdt)
           }
           )
@@ -168,11 +169,11 @@ setMethod(".getResults",
               }
               
               mdr[[j]] <- list()
-              mdr[[j]]$gmpcoef <- pmx0[1,index]
+              mdr[[j]]$gmpmcoef <- pmx0[1,index]
               mdr[[j]]$ix <- index
 
               mdr[[j]]["cnames"] <- paste("(",
-                                 paste(names(mdr[[j]]$gmpcoef),
+                                 paste(names(mdr[[j]]$gmpmcoef),
                                        collapse=", ",sep=""),
                                  ")", sep="")
               
@@ -185,9 +186,9 @@ setMethod(".getResults",
               if (length(index)==1) {
                 mdr[[j]]$nruns <- length(pmx)
                 x.mus <- mean(pmx)
-                mdr[[j]]$mdOrig <- abs(mdr[[j]]$gmpcoef - x.mus)
+                mdr[[j]]$mdOrig <- abs(mdr[[j]]$gmpmcoef - x.mus)
                 mdr[[j]]$nge <-
-                  sum(abs(pmx) >= abs(mdr[[j]]$gmpcoef))
+                  sum(abs(pmx) >= abs(mdr[[j]]$gmpmcoef))
                 mdr[[j]]$pval <-
                   mdr[[j]]$nge / (mdr[[j]]$nruns+1)
               } else {
@@ -197,9 +198,9 @@ setMethod(".getResults",
                 mdr[[j]]$vcov <- x.cov.inv
 
                 mdr[[j]]$mdOrig <-
-                  as.numeric(sqrt(t(mdr[[j]]$gmpcoef - x.mus) %*%
+                  as.numeric(sqrt(t(mdr[[j]]$gmpmcoef - x.mus) %*%
                                   x.cov.inv %*%
-                                  (mdr[[j]]$gmpcoef - x.mus)))
+                                  (mdr[[j]]$gmpmcoef - x.mus)))
                 mdr[[j]]$nruns <- length(pmx[,1])
 
                 mdr[[j]]$mdPerm <- rep(0, mdr[[j]]$nruns+1)

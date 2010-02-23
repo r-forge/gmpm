@@ -1,9 +1,9 @@
-\name{GmpSummary-class}
+\name{GMPMSummary-class}
 \docType{class}
-\alias{GmpSummary-class}
-\alias{initialize,GmpSummary-method}
-\alias{show,GmpSummary-method}
-\title{Class GmpSummary}
+\alias{GMPMSummary-class}
+\alias{initialize,GMPMSummary-method}
+\alias{show,GMPMSummary-method}
+\title{Class GMPMSummary}
 \description{Summary information for a GMPM.}
 
 \section{Objects from the Class}{
@@ -15,14 +15,14 @@
 \section{Slots}{
   \describe{
 
-    \item{\code{gmpInfo}:}{Object of class \code{"list"}; basic
+    \item{\code{gmpmInfo}:}{Object of class \code{"list"}; basic
       information about the model.}
     
-    \item{\code{gmpMainSum}:}{Object of class \code{"list"}; the main
+    \item{\code{gmpmMainSum}:}{Object of class \code{"list"}; the main
       summary of p-values, including multiparameter tests where
       appropriate.}
     
-    \item{\code{gmpRegSum}:}{Object of class \code{"list"}; optional
+    \item{\code{gmpmRegSum}:}{Object of class \code{"list"}; optional
     summary of the regression, not included by default (see
     \sQuote{showReg} below).}
     
@@ -33,11 +33,11 @@
 }
 \section{Methods}{
   \describe{
-    \item{initialize}{\code{signature(.Object = "GmpSummary")}: ... }
-    \item{show}{\code{signature(object = "GmpSummary")}: ... }
+    \item{initialize}{\code{signature(.Object = "GMPMSummary")}: ... }
+    \item{show}{\code{signature(object = "GMPMSummary")}: ... }
 	 }
 }
 \seealso{
-  \code{\link{gmp}}, \code{\link{Gmp-class}}
+  \code{\link{gmpm}}, \code{\link{GMPM-class}}
 }
 \keyword{classes}

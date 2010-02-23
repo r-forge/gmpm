@@ -1,7 +1,15 @@
-gmpCreate <- function(formula, family, data=parent.frame(), ivars=c(),
-                gmpControl=gmpCtrl(), ...)
+gmpCreate <- function(...) {
+  stop("Function gmpCreate superseded by gmpmCreate as of version 0.4-0.")
+}
+
+gmp <- function(...) {
+  stop("Function gmp superseded by gmpmCreate as of version 0.4-0.")
+}
+
+gmpmCreate <- function(formula, family, data=parent.frame(), ivars=c(),
+                gmpmControl=gmpmCtrl(), ...)
 {
-  gmpFormals <- setdiff(names(formals(gmpCreate)), "...")
+  gmpmFormals <- setdiff(names(formals(gmpmCreate)), "...")
   
   if (missing(formula)) {
     stop("Argument 'formula' must be supplied.")
@@ -11,30 +19,30 @@ gmpCreate <- function(formula, family, data=parent.frame(), ivars=c(),
     stop("Argument 'family' must be supplied.")
   }
   
-  myclass <- "Gmp.user" # default
+  myclass <- "GMPM.user" # default
 
   if (is.character(family)) {
       if (pmatch(c(family), c("multinomial", "user"),0) > 0) {
           if (pmatch(c(family), c("multinomial"), 0) > 0) {
-              myclass = "Gmp.mul"
+              myclass = "GMPM.mul"
           } else {
-            myclass <- "Gmp.user"
+            myclass <- "GMPM.user"
           }
       } else {
-        myclass <- "Gmp.glm"
+        myclass <- "GMPM.glm"
       }
   } else {
     if (is.function(family)) {
       family <- substitute(family)
     }
-    myclass <- "Gmp.glm"
+    myclass <- "GMPM.glm"
   }
   
   mc <- match.call(expand.dots = TRUE)
   c2 <- call("new", Class=myclass,
              formula=formula, family=family,
-             data=data, ivars=ivars, gmpControl=gmpControl)
-  mn <- setdiff(1:length(names(mc)), c(1,2,match(gmpFormals, names(mc))))  
+             data=data, ivars=ivars, gmpmControl=gmpmControl)
+  mn <- setdiff(1:length(names(mc)), c(1,2,match(gmpmFormals, names(mc))))  
   mc2 <- mc[c(1L, mn)]
   if (length(mn) > 0) {
     mcl <- as.call(c(as.list(c2), as.list(mc2[2L:length(mc2)])))
@@ -49,7 +57,7 @@ gmpCreate <- function(formula, family, data=parent.frame(), ivars=c(),
     }
   else {}
   
-  x@gmpControl <- gmpControl
+  x@gmpmControl <- gmpmControl
   
   .parseFormula(x, formula)
 
@@ -88,7 +96,8 @@ gmpCreate <- function(formula, family, data=parent.frame(), ivars=c(),
   x@IVcoef <- .getFactorLabelsFromFit(x)
   
   .preparePermScheme(x)
-  x@pspace <- permSpace(x)
+#  x@pspace <- permSpace(x)
+
   x@coef0 <- coef(fitOnce(x))
   x@coefTerms <- .getCoefTerms(x)  
 
@@ -98,20 +107,20 @@ gmpCreate <- function(formula, family, data=parent.frame(), ivars=c(),
 }
   
 
-gmp <- function(formula, family, data=parent.frame(), ivars=c(),
-                gmpControl=gmpCtrl(), ...)
+gmpm <- function(formula, family, data=parent.frame(), ivars=c(),
+                gmpmControl=gmpmCtrl(), ...)
 {
   mc <- match.call()
-  mc[[1]] <- gmpCreate
+  mc[[1]] <- gmpmCreate
 
   # create the object
   x <- eval(mc)
 
   # fit the object
-  return(gmpFit(x))
+  return(gmpmEstimate(x))
 }
   
-gmpCtrl <- function(maxruns = 999, report.interval=10,
+gmpmCtrl <- function(maxruns = 999, report.interval=10,
                         outfile = NULL)
 {
   return(list(maxruns=maxruns, report.interval=report.interval,

@@ -1,11 +1,11 @@
 Package: gmpm
 Type: Package
 Title: Generalized Multilevel Permutation Models
-Version: 0.1-5
-Date: 2009-09-16
-Author: Dale Barr <dale.barr@ucr.edu>
-Maintainer: Dale Barr <dale.barr@ucr.edu>
-Description: Permutation methods for testing hypotheses on various types of multilevel data
+Version: 0.4-0
+Date: 2010-02-22
+Author: Dale Barr <dalejbarr3@gmail.com>
+Maintainer: Dale Barr <dalejbarr3@gmail.com>
+Description: Permutation methods for testing hypotheses on multilevel experimental data
 License: GPL (>=2)
 LazyLoad: yes
 Depends: methods

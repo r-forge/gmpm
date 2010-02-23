@@ -1,6 +1,5 @@
 \name{gmpm-package}
 \alias{gmpm-package}
-\alias{gmpm}
 \docType{package}
 \title{
   Generalized Multilevel Permutation Models (GMPMs)
@@ -36,5 +35,5 @@ Permutation Models.
 \keyword{nonparametric}
 \keyword{multivariate}
 \seealso{
-  \code{\link{gmp}}
+  \code{\link{gmpm}}
 }

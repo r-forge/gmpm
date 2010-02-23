@@ -1,33 +1,33 @@
-\name{Gmp-class}
+\name{GMPM-class}
 \docType{class}
-\alias{Gmp-class}
-\alias{Gmp.glm-class}
-\alias{Gmp.mul-class}
-\alias{Gmp.user-class}
-\alias{initialize,Gmp-method}
-\alias{initialize,Gmp.glm-method}
-\alias{initialize,Gmp.mul-method}
-\alias{initialize,Gmp.user-method}
-\alias{show,Gmp-method}
-\alias{summary,Gmp-method}
+\alias{GMPM-class}
+\alias{GMPM.glm-class}
+\alias{GMPM.mul-class}
+\alias{GMPM.user-class}
+\alias{initialize,GMPM-method}
+\alias{initialize,GMPM.glm-method}
+\alias{initialize,GMPM.mul-method}
+\alias{initialize,GMPM.user-method}
+\alias{show,GMPM-method}
+\alias{summary,GMPM-method}
 
 \title{GMPM Model Classes}
 \description{S4 objects containing information about GMPMs.}
 \section{Objects from the Class}{
 
-  The class \sQuote{Gmp} is a virtual class: No objects may be created
-  from it.  The function \code{\link{gmpCreate}} chooses the type of
-  class to be created, either \code{Gmp.glm}, \code{Gmp.mul}, or
-  \code{Gmp.user}, depending on the value passed to the \sQuote{family}
-  argument of the function \code{\link{gmpCreate}} or \code{\link{gmp}}.
+  The class \sQuote{GMPM} is a virtual class: No objects may be created
+  from it.  The function \code{\link{gmpmCreate}} chooses the type of
+  class to be created, either \code{GMPM.glm}, \code{GMPM.mul}, or
+  \code{GMPM.user}, depending on the value passed to the \sQuote{family}
+  argument of the function \code{\link{gmpmCreate}} or \code{\link{gmpm}}.
 
-  Objects of type \code{Gmp.glm} fit models using the underlying
+  Objects of type \code{GMPM.glm} fit models using the underlying
   regression function \code{\link{glm}}.
 
-  Object of type \code{gmp.mul} fit models using the underlying function
+  Object of type \code{GMPM.mul} fit models using the underlying function
   \code{\link{multinom}} from package \pkg{nnet}.
 
-  The class \code{Gmp.user} is intended to allow users to specify their
+  The class \code{GMPM.user} is intended to allow users to specify their
   own regression functions (e.g., calls to nonlinear regression), but
   has not yet been implemented.
 
@@ -52,8 +52,8 @@
     \item{\code{nunits}:}{An integer corresponding to the number of
     multilevel units in the model frame}
     
-    \item{\code{gmpControl}:}{A \code{"list"} with control arguments for
-    the fitting function (see \code{\link{gmp}})}
+    \item{\code{gmpmControl}:}{A \code{"list"} with control arguments for
+    the fitting function (see \code{\link{gmpm}})}
     
     \item{\code{fitcall}:}{The call to the underlying function, cast as
     a \code{"list"} }
@@ -98,7 +98,7 @@
     
     \item{\code{pspace}:}{Number of possible permutations}
     
-    \item{\code{pmx}:}{The permutation matrix (or array, for Gmp.mul objects)}
+    \item{\code{pmx}:}{The permutation matrix (or array, for GMPM.mul objects)}
     
     \item{\code{nCellsPerUnit}:}{Number of within-subject cells per
       sampling unit}
@@ -106,20 +106,20 @@
     \item{\code{ncomp}:}{Number of Monte Carlo runs completed}
   
     \item{\code{convergence}:}{A logical vector specifying whether or
-      not a given run converged (\code{Gmp.mul} only)}
+      not a given run converged (\code{GMPM.mul} only)}
     
   }
 }
 \section{Methods}{
   \describe{
-    \item{initialize}{\code{signature(.Object = "Gmp")}: ... }
-    \item{show}{\code{signature(object = "Gmp")}: ... }
-    \item{summary}{\code{signature(object = "Gmp")}: ... }
-    \item{mdTest}{\code{signature(x = "Gmp", y = "vector")}: ... }
-    \item{mdTest}{\code{signature(x = "Gmp", y = "matrix")}: ... }    
+    \item{initialize}{\code{signature(.Object = "GMPM")}: ... }
+    \item{show}{\code{signature(object = "GMPM")}: ... }
+    \item{summary}{\code{signature(object = "GMPM")}: ... }
+    \item{mdTest}{\code{signature(x = "GMPM", y = "vector")}: ... }
+    \item{mdTest}{\code{signature(x = "GMPM", y = "matrix")}: ... }    
 	 }
 }
 \seealso{
-  \code{\link{gmp}}
+  \code{\link{gmpm}}
 }
 \keyword{classes}

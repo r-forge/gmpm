@@ -1,23 +1,23 @@
-\name{gmp}
-\alias{gmp}
-\alias{gmpCreate}
-\alias{gmpFit}
-\alias{gmpFit,Gmp-method}
-\title{Creating and Fitting Generalized Multilevel Permutation Models (GMPMs)}
+\name{gmpm}
+\alias{gmpm}
+\alias{gmpmCreate}
+\alias{gmpmEstimate}
+\alias{gmpmEstimate,GMPM-method}
+\title{Creating and Estimating Generalized Multilevel Permutation Models (GMPMs)}
 \description{
-\code{gmpCreate} creates a GMPM object without performing permutation runs.
-\code{gmpFit} performs permutation runs, and \code{gmp} is a convenience
-function that performs a call to gmpCreate followed by a call to gmpFit.
+\code{gmpmCreate} creates a GMPM object without performing permutation runs.
+\code{gmpmEstimate} performs permutation runs, and \code{gmpm} is a convenience
+function that performs a call to gmpmCreate followed by a call to gmpmEstimate.
 }
 
 \usage{
 
-gmpCreate(formula, family, data=parent.frame(), ivars,
-gmpControl=gmpCtrl(), ...)
+gmpmCreate(formula, family, data=parent.frame(), ivars,
+gmpmControl=gmpmCtrl(), ...)
 
-gmpFit(object, gmpControl)
+gmpmEstimate(x, gmpmControl)
 
-gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
+gmpm(formula, family, data = parent.frame(), ivars, gmpmControl = gmpmCtrl(), ...)
 
 }
 
@@ -35,7 +35,7 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
     quotation marks.}
     
   \item{data}{A data frame containing the data model will be fit to.  If
-  left unspecified, gmp will search for the data within the parent
+  left unspecified, gmpm will search for the data within the parent
   environment.}
 
   \item{ivars}{Names of all independent variables (IVs) included as
@@ -43,7 +43,7 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
   strings.  All other predictors in the model will be considered
   \sQuote{covariates} and will not be subject to randomization.}
 
-  \item{gmpControl}{A gmpControl object used to control the fitting
+  \item{gmpmControl}{A gmpmControl object used to control the fitting
     function.  This is a list one or more of the following options:
 
     \itemize{
@@ -55,7 +55,7 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
       }
     }
 
-    \item{object}{A Gmp object}
+    \item{x}{A GMPM object}
     
   \item{\dots}{Other arguments to be passed on to the underlying function
     that performs the actual regression (see below).}
@@ -98,13 +98,13 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
   This option determines which of various regression subroutines are
   used to fit the model.  All of the options for generalized linear
   models (glms) are available (see \code{\link{family}} for details); if
-  you choose one of these options then gmp will call the underlying
+  you choose one of these options then gmpm will call the underlying
   regression function \code{\link{glm}} to perform the actual
-  regression.  If the option \sQuote{multinomial} is chosen, then gmp
+  regression.  If the option \sQuote{multinomial} is chosen, then gmpm
   will fit a multinomial model using \code{\link{multinom}} in package
   \pkg{nnet}.  In case tweaks to these underlying functions are
-  necessary, it is possible to specify options to \code{gmp} or
-  \code{gmpCreate} that will be passed along during the fitting process.
+  necessary, it is possible to specify options to \code{gmpm} or
+  \code{gmpmCreate} that will be passed along during the fitting process.
   For example, with multinomial models it is often necessary to increase
   the maximum number of iterations, which can be done by the argument
   \sQuote{maxit}.  User-defined models are not yet implemented, but left
@@ -112,7 +112,7 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
 }
 
 \value{
-  Each function returns a \code{\linkS4class{Gmp}} object.
+  Each function returns a \code{\linkS4class{GMPM}} object.
 }
 
 \references{ Barr, D. J. (in preparation).  Generalized Multilevel
@@ -125,7 +125,7 @@ gmp(formula, family, data = parent.frame(), ivars, gmpControl = gmpCtrl(), ...)
   See example \code{\link{kb07}} for an example of usage with
   binomial data.
 
-  \code{\linkS4class{Gmp}}
+  \code{\linkS4class{GMPM}}
 }
 
 \examples{
@@ -136,10 +136,10 @@ df1 <- data.frame(SubjID=rep(1:20,each=2),
                   Y=rnorm(40)*2)
 
 # parametric and non-parametric analyses should look similar
-df1.gmp <- gmp(Y ~ A | SubjID, gaussian, df1, c("A"))
+df1.gmpm <- gmpm(Y ~ A | SubjID, gaussian, df1, c("A"))
 
 # parametric and non-parametric analyses should look similar
-summary(df1.gmp)
+summary(df1.gmpm)
 summary(aov(Y ~ A + Error(SubjID), df1))
 
 # now create horrible dependencies by reduplicating observations
@@ -147,7 +147,7 @@ df2 <- rbind(df1,df1,df1,df1,df1,df1,df1,df1,df1)
 
 # parametric analysis more likely to give Type I error
 summary(aov(Y ~ A + Error(SubjID), df2))
-df2.gmp <- gmp(Y ~ A | SubjID, gaussian, df2, c("A"))
+df2.gmpm <- gmpm(Y ~ A | SubjID, gaussian, df2, c("A"))
 }
 \keyword{htest}
 \keyword{robust}

@@ -1,7 +1,7 @@
 export(
-       "gmp",
-       "gmpCreate",
-       "gmpCtrl"
+       "gmpm",
+       "gmpmCreate",
+       "gmpmCtrl"
        )
 
 exportMethods(
@@ -11,10 +11,10 @@ exportMethods(
     "getPermMx",
     "getPValue",
     "getRegSummary",
-    "gmpCoef",
+    "gmpmCoef",
     "getModelFrame",
     "getFactorCodes",
-    "gmpFit",
+    "gmpmEstimate",
     "mdTest",
     "origFit",
     "permSpace",
@@ -24,11 +24,11 @@ exportMethods(
 )
 
 exportClasses(
-    "Gmp",
-     "Gmp.glm",
-     "Gmp.mul",
-     "GmpSummary",
-     "Gmp.user",
+    "GMPM",
+     "GMPM.glm",
+     "GMPM.mul",
+     "GMPMSummary",
+     "GMPM.user",
      "Mdtest",
      "Mdtest.sum" 
 )

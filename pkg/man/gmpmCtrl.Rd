@@ -1,13 +1,13 @@
-\name{gmpCtrl}
-\alias{gmpCtrl}
-\title{Return a gmpCtrl Object with Default Settings}
+\name{gmpmCtrl}
+\alias{gmpmCtrl}
+\title{Return a gmpmCtrl Object with Default Settings}
 \description{
-This is a convenience function that returns a gmpControl object for
+This is a convenience function that returns a gmpmControl object for
 controlling Monte Carlo runs, with default settings.  (Will probably be
 deprecated in future versions of package \pkg{gmpm}.)
 }
 \usage{
-gmpCtrl(maxruns = 999, report.interval = 10, outfile = NULL)
+gmpmCtrl(maxruns = 999, report.interval = 10, outfile = NULL)
 }
 \arguments{
   \item{maxruns}{total number of Monte Carlo runs}

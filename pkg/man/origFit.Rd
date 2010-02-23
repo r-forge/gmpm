@@ -1,6 +1,6 @@
 \name{origFit}
 \alias{origFit}
-\alias{origFit,Gmp-method}
+\alias{origFit,GMPM-method}
 \title{Get Original Regression Fit}
 \description{
 Get the regression fit to the data as originally labeled.
@@ -9,7 +9,7 @@ Get the regression fit to the data as originally labeled.
 origFit(object)
 }
 \arguments{
-  \item{object}{A \code{Gmp} object}
+  \item{object}{A \code{GMPM} object}
 }
 \value{
 Results of a call to the underlying regression function, typically a

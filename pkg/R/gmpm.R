@@ -1,11 +1,75 @@
+###### first come the helper functions
+
+.getMinN <- function(df1,ivs) {
+  # find the cell with the minimum no. of observations
+  f1 <- combFreqs(df1,ivs)
+  return(min(f1$N))
+}
+
+sortDF <- function(x, ovec, fixRowNames=TRUE) {
+  slst <- list()
+  for (i in 1:length(ovec)) {
+    slst[[i]] <- x[,ovec[i]]
+  }
+
+  df1 <- x[do.call(order, slst),]
+
+  if (fixRowNames) {
+    rownames(df1) <- 1:nrow(df1)
+  } else {}
+  
+  return(df1)
+}
+
+combFreqs <- function(x, ovec) {
+
+  if (length(ovec)==0) {
+    x$N <- 1
+    return(x)
+  }
+  
+  N <- 1:nrow(x)
+  bylist <- list()
+  for (i in 1:length(ovec)) {
+    bylist[[i]] <- x[,ovec[i]]
+  }
+  names(bylist) <- ovec
+  
+  xt <- aggregate(list(N=N), by=bylist, length)
+  return(sortDF(xt,ovec))
+}
+
+getDFix <- function(x, keys) {
+  # return row indices for rows matching variable-value pairs in keys
+  ex1 <- rep(NA, length(keys))
+  varnames <- names(keys)
+  for (i in 1:length(keys)) {
+    if (is.factor(keys[[i]]) || is.character(keys[[i]])) {
+      str1 <- "'"
+    } else {
+      str1 <- ""
+    }
+    ex1[i] <- paste("(x[,'",varnames[i],"']==",str1,keys[[i]],str1,")",sep="")
+  }
+  e1 <- parse(text=paste(ex1, collapse=" & "))
+  return((1:nrow(x))[eval(e1,list(x=x))])
+}
+
+permuteNA <- function(x) {
+  s1 <- sample(x)
+  return(c(s1[!is.na(s1)],s1[is.na(s1)]))
+}
+
+###### now come the S4 methods
+
 setMethod(".initFinal",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object) {            
             return(object)
           })
 
 setMethod(".initFinal",
-          signature(object="Gmp.mul"),
+          signature(object="GMPM.mul"),
           function(object) {
 
           # make sure that if it is a single variable, it is coded as a factor
@@ -22,13 +86,13 @@ setMethod(".initFinal",
           })
 
 setMethod("getModelFrame",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object) {
             return(object@df1)
           })
 
 setMethod("getFactorCodes",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object) {
             ivs <- object@ivars
             nIVs <- length(object@ivars)
@@ -42,7 +106,7 @@ setMethod("getFactorCodes",
           })
 
 setMethod(".getFactorLabelsFromFit",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object, ivar) {
             fcall <- as.list(object@fitcall)
             dform <- object@dform
@@ -61,7 +125,7 @@ setMethod(".getFactorLabelsFromFit",
           })
 
 setMethod(".getPredictorsFromFaclist",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, faclist, allvars, nTests, j) {
             if (nTests > 1) {
               ivinc <- allvars[faclist[,j]==1]
@@ -69,6 +133,13 @@ setMethod(".getPredictorsFromFaclist",
               ivinc <- allvars
             }
 
+            setBetw <- intersect(ivinc,x@ivBetween)
+            if (length(setBetw) > 0) {
+              pmx <- (1:length(x@ivBetween))[x@ivBetween==setBetw[1]]
+            } else {
+              pmx <- length(x@psec)
+            }
+            
             if (length(intersect(ivinc, x@covars)) > 1) {
                                         # there is more than one co-variate in the term.
                                         # we need to perform a union rather than an intersection
@@ -82,11 +153,11 @@ setMethod(".getPredictorsFromFaclist",
               cvars <- .getIXfromIV(x, ivinc, TRUE)
             }
 
-            return(cvars)
+            return(list(pmx=pmx, cvars=cvars))
           })
 
 setMethod("testDV",
-          signature(x="Gmp.mul"),
+          signature(x="GMPM.mul"),
           function(x, excludeLevels, byCovar=FALSE) {
             DVlevels <- .getDVlevels(x)
             if (!missing(excludeLevels)) {
@@ -128,7 +199,7 @@ setMethod("testDV",
           })
 
 setMethod(".getDVlevels",
-          signature(x="Gmp.mul"),
+          signature(x="GMPM.mul"),
           function(x) {
             if(length(grep("cbind", x@DVname))>0) {
               f1 <- strsplit(x@DVname, "\\(")[[1]][2]
@@ -148,13 +219,13 @@ setMethod(".getDVlevels",
           })
 
 setMethod(".writeFit",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, y, outfile, append) {
             cat(y, "\n", file=outfile, append=append)
           })
 
 setMethod(".writeFit",
-          signature(x="Gmp.mul"),
+          signature(x="GMPM.mul"),
           function(x, y, outfile, append) {
             nRows <- dim(y)[1]
             for (i in 1:nRows) {
@@ -164,15 +235,15 @@ setMethod(".writeFit",
           })
 
 setMethod("appendToPmx",
-          signature(x="Gmp", y="Gmp"),
+          signature(x="GMPM", y="GMPM"),
           function(x, y) {
             nameObject <- deparse(substitute(x))            
             if (length(dim(x)) != length(dim(y))) {
-              cat("Gmp source object permutation matrix has dimensions ", dim(y),
+              cat("GMPM source object permutation matrix has dimensions ", dim(y),
                   "\n")              
-              cat("Gmp destination object permutation matrix has dimensions ", dim(x),
+              cat("GMPM destination object permutation matrix has dimensions ", dim(x),
                   "\n")
-              stop("These Gmp objects do not look the same.")
+              stop("These GMPM objects do not look the same.")
             }
             pmxSrc <- getPermMx(y)[-1,]
             pmxThis <- getPermMx(x)
@@ -183,13 +254,13 @@ setMethod("appendToPmx",
             }
             cat("appended ", length(pmxSrc[,1]), " rows\n")            
             x@ncomp <- dim(x@pmx)[1]-1
-            warning("Error checking not implemented yet; \nPlease ensure these two Gmp objects have the same underlying model / data.")
+            warning("Error checking not implemented yet; \nPlease ensure these two GMPM objects have the same underlying model / data.")
             assign(nameObject, x, envir=parent.frame())            
             return(invisible(x))
           })
 
 setMethod("appendToPmx",
-          signature(x="Gmp", y="character"),
+          signature(x="GMPM", y="character"),
           function(x, y) {
             nameObject <- deparse(substitute(x))            
             ff <- read.table(y)
@@ -212,15 +283,15 @@ setMethod("appendToPmx",
           })
 
 setMethod("appendToPmx",
-          signature(x="Gmp.mul", y="Gmp"),
+          signature(x="GMPM.mul", y="GMPM"),
           function(x, y) {
             nameObject <- deparse(substitute(x))            
             if (length(dim(x)) != length(dim(y))) {
-              cat("Gmp source object permutation matrix has dimensions ", dim(y),
+              cat("GMPM source object permutation matrix has dimensions ", dim(y),
                   "\n")              
-              cat("Gmp destination object permutation matrix has dimensions ", dim(x),
+              cat("GMPM destination object permutation matrix has dimensions ", dim(x),
                   "\n")
-              stop("These Gmp objects do not look the same.")
+              stop("These GMPM objects do not look the same.")
             }
             pmxSrc <- getPermMx(y)[-1,,]
             srclen <- dim(pmxSrc)[1]
@@ -241,13 +312,13 @@ setMethod("appendToPmx",
             }
             cat("appended ", srclen, " rows\n")            
             x@ncomp <- dim(x@pmx)[1]-1
-            warning("Error checking not implemented yet; \nPlease ensure these two Gmp objects have the same underlying model / data.")
+            warning("Error checking not implemented yet; \nPlease ensure these two GMPM objects have the same underlying model / data.")
             assign(nameObject, x, envir=parent.frame())            
             return(invisible(x))
           })
 
 setMethod("appendToPmx",
-          signature(x="Gmp.mul", y="character"),
+          signature(x="GMPM.mul", y="character"),
           function(x, y) {
             nameObject <- deparse(substitute(x))            
             ff <- read.table(y)
@@ -264,7 +335,7 @@ setMethod("appendToPmx",
           })
 
 setMethod(".prepareMainSum",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, byCovar=FALSE) {
 
             # figure out tests we need to run from model frame
@@ -319,75 +390,88 @@ setMethod(".prepareMainSum",
           })
 
 setMethod(".regSumProc",
-          signature(x="Gmp"),
-          function(x, pmx, index) {
+          signature(x="GMPM"),
+          function(x, psec, index) {
             #print("~~~ in .regSumProc ~~~")
-            coef0 <- pmx[1,]
-            ctest <- 1:length(coef0) %in% index
+            coef0 <- psec[[1]][1,]
+
+            gg <- .prepareMainSum(x,FALSE)
+            psecmap <- rep(NA, length(coef0))
+            names(psecmap) <- names(coef0)
+            for (i in 1:gg$nTests) {
+              hh <- .getPredictorsFromFaclist(x,gg$faclist,gg$allvars,gg$nTests,i)
+              for (j in 1:length(hh$cvars)) {
+                psecmap[hh$cvars[j]] <- hh$pmx
+              }
+            }
 
             c2 <- coef0
             se <- rep(NA, length(c2))
             nexceed <- rep(NA, length(c2))
             pval <- rep(NA, length(c2))              
             for (i in 1:length(c2)) {
-              if (ctest[i]) {
+              if (!is.na(psecmap[i])) {
+                pmx <- psec[[psecmap[i]]]
                 se[i] <- sd(pmx[,i])
                 nexceed[i] <- getNExceeding(pmx, i)
                 pval[i] <- getPValue(pmx, i)
-              }
+              } else {}
             }
 
             c2 <- round(c2,4)
             se <- round(se,4)
-            pval <- round(pval,4)
-            gmpRegSum <- data.frame(Coef=names(c2),
+            pval <- round(pval,x@ndigits)
+            gmpmRegSum <- data.frame(Coef=names(c2),
                                     Estimate=c2, se, nexceed,
                                     pval, .getSig(pval))
-            rownames(gmpRegSum) <- 1:length(c2)
-            colnames(gmpRegSum) <- c("Coefficient", "Estimate",
+            rownames(gmpmRegSum) <- 1:length(c2)
+            colnames(gmpmRegSum) <- c("Coefficient", "Estimate",
                                      "Std. Error", "N>=orig", "p-value", " ")
-            return(gmpRegSum)
+            return(gmpmRegSum)
           })
 
 setMethod("getRegSummary",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x) {
-            ff <- list(.regSumProc(x, x@pmx, x@ivix))
+            ff <- list(.regSumProc(x, x@psec, x@ivix))
             names(ff) <- "Main Regression"
             return(ff)
           })
 
 setMethod("getRegSummary",
-          signature(x="Gmp.mul"),
+          signature(x="GMPM.mul"),
           function(x) {
-            #print("~~~ in getRegSummary (Gmp.mul) ~~~")
+            #print("~~~ in getRegSummary (GMPM.mul) ~~~")
             mlist <- list()
             DVlevels <- .getDVlevels(x)
             nDVlevels <- dim(x@coef0)[1]            
             mnames <- paste(DVlevels[2:length(DVlevels)], DVlevels[1],
                   sep=" versus ")
             for (i in 1:nDVlevels) {
-              mlist[[i]] <- .regSumProc(x, x@pmx[,i,], x@ivix)
+              psec <- .collapseMultinomPmx(x, i)
+              mlist[[i]] <- .regSumProc(x, psec, x@ivix)
             }
             names(mlist) <- mnames
-            #print("... exiting getMainSummary (Gmp.mul) ...")
+            #print("... exiting getRegSummary (GMPM.mul) ...")
             return(mlist)
             
           })
 
 setMethod(".mainSumProc",
-          signature(x="Gmp"),
-          function(x, faclist, allvars, nTests, pmx) {
+          signature(x="GMPM"),
+          function(x, faclist, allvars, nTests, psec) {
             #print("~~~ in .mainSumProc ~~~")
 
-            coef0 <- pmx[1,]
+            #coef0 <- pmx[1,]
             nge <- rep(NA, nTests)
             pval <- rep(NA, nTests)
             mcoef <- rep(NA, nTests)
 
             for (j in 1:nTests) {
-              cvars <- .getPredictorsFromFaclist(x, faclist, allvars, nTests, j)
-
+              hh <- .getPredictorsFromFaclist(x, faclist, allvars, nTests, j)
+              pmx <- psec[[hh$pmx]]
+              cvars <- hh$cvars
+              
               if (length(cvars) > 1) {
                 mdt <- mdTest(pmx, cvars)
                 nge[j] <- .getResults(mdt, 1, "nge")
@@ -401,12 +485,12 @@ setMethod(".mainSumProc",
               ##############################################
             }
 
-            gmpMainSum <- data.frame(mcoef, nge, pval, .getSig(pval))
-            colnames(gmpMainSum) <- c("Coef","N>=Orig","p-value", " ")
+            gmpmMainSum <- data.frame(mcoef, nge, pval, .getSig(pval))
+            colnames(gmpmMainSum) <- c("Coef","N>=Orig","p-value", " ")
             if (nTests > 1) {
-              rownames(gmpMainSum) <- colnames(faclist)
+              rownames(gmpmMainSum) <- colnames(faclist)
             } else {
-              rownames(gmpMainSum) <- x@ivars
+              rownames(gmpmMainSum) <- x@ivars
             }
 
             if (length(x@covars) > 0) {                                       
@@ -415,31 +499,31 @@ setMethod(".mainSumProc",
                 vv <- as.vector(colSums(vv))
                 vv[vv>1] <- 1
               }
-              gmpMainSum <- gmpMainSum[order(vv),]
+              gmpmMainSum <- gmpmMainSum[order(vv),]
             }
 
             #print("... exiting .mainSumProc ...")               
-            return(gmpMainSum)
+            return(gmpmMainSum)
           })
 
 setMethod("getMainSummary",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, byCovar=FALSE) {
             gg <- .prepareMainSum(x, byCovar)
             faclist <- gg[["faclist"]]
             allvars <- gg[["allvars"]]
             nTests <- gg[["nTests"]]
-            #print("~~~ in getMainSummary (Gmp) ~~~")
-            ff <- list(.mainSumProc(x, faclist, allvars, nTests, x@pmx))
+            #print("~~~ in getMainSummary (GMPM) ~~~")
+            ff <- list(.mainSumProc(x, faclist, allvars, nTests, x@psec))
             names(ff) <- c("Main Results")
-            #print("... exiting getMainSummary Gmp) ...")
+            #print("... exiting getMainSummary GMPM) ...")
             return(ff)
           })
 
 setMethod("getMainSummary",
-          signature(x="Gmp.mul"),
+          signature(x="GMPM.mul"),
           function(x, byCovar=FALSE) {
-            #print("~~~ in getMainSummary (Gmp.mul) ~~~")
+            #print("~~~ in getMainSummary (GMPM.mul) ~~~")
             gg <- .prepareMainSum(x, byCovar)
             faclist <- gg[["faclist"]]
             allvars <- gg[["allvars"]]
@@ -450,16 +534,17 @@ setMethod("getMainSummary",
             mnames <- paste(DVlevels[2:length(DVlevels)], DVlevels[1],
                   sep=" versus ")
             for (i in 1:nDVlevels) {
+              psec <- .collapseMultinomPmx(x, i)
               mlist[[i]] <-
-                .mainSumProc(x, faclist, allvars, nTests, x@pmx[,i,])
+                .mainSumProc(x, faclist, allvars, nTests, psec)
             }
             names(mlist) <- mnames
-            #print("... exiting getMainSummary (Gmp.mul) ...")
+            #print("... exiting getMainSummary (GMPM.mul) ...")
             return(mlist)
           })
 
 setMethod(".getIXfromIV",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, ivinc, includeCovars=TRUE) {
             flab <- x@IVcoef
             if (includeCovars) {
@@ -494,7 +579,7 @@ setMethod(".getIXfromIV",
 
            
 setMethod(".getCoefTerms",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, mycoef) {
             if (missing(mycoef)) {
               mycoef <- x@coef0
@@ -514,25 +599,26 @@ setMethod(".getCoefTerms",
           )
 
 setMethod(".storeFitResult",
-          signature(x="Gmp"),
-          function(x, fit, index) {
+          signature(x="GMPM"),
+          function(x, fit, section, index) {
             nameObject <- deparse(substitute(x))
 
             myFit <- coef(fit)
-            x@pmx[index,] <- myFit
+            x@psec[[section]][index,] <- myFit
+                                        #x@pmx[index,] <- myFit
 
             assign(nameObject, x, envir=parent.frame())            
           }
           )
 
 setMethod(".storeFitResult",
-          signature(x="Gmp.mul"),
-          function(x, fit, index) {
+          signature(x="GMPM.mul"),
+          function(x, fit, section, index) {
             
             nameObject <- deparse(substitute(x))
 
             myFit <- coef(fit)
-            x@pmx[index,,] <- myFit
+            x@psec[[section]][index,,] <- myFit
             if (!is.null(fit$convergence)) {
               x@convergence <- if(fit$convergence==1) FALSE else TRUE
             }
@@ -542,25 +628,19 @@ setMethod(".storeFitResult",
           )
 
 setMethod(".reportProgress",
-          signature(x="Gmp"),
-          function(x, myFit, ix, maxruns, elapsed) {
-            if (is.matrix(myFit)) {
-              myFit <- as.vector(myFit[1,])
-            }
-            tmp <- myFit[x@ivix]
-            tmp1 <- tmp[if(length(tmp)>3) 1:3 else length(tmp)]
+          signature(x="GMPM"),
+          function(x, ix, maxruns, elapsed) {
             fmtstr1 <- paste("%",nchar(as.character(maxruns)),"d",
                             sep="")
             fmtstr2 <- paste(fmtstr1, "/", fmtstr1, ":", sep="")
             stmp1 <- sprintf(fmtstr2, ix, maxruns)
-            stmp2 <- sprintf("% 1.3f", tmp1)
+            #stmp2 <- sprintf("% 1.3f", tmp1)
             if (length(elapsed) > 1) {
               efac <- mean(elapsed)
             } else {
               efac <- elapsed[1]
             }
-            cat(stmp1, stmp2, if (length(tmp)>3) "..." else " ",
-                sprintf("%1.3fs/run, ", efac))
+            cat(stmp1, sprintf("%1.3fs/run, ", efac))
 
             totsecs <- efac*(maxruns-ix)
             cat(sprintf("%02dh:", floor(totsecs / 3600)))
@@ -575,29 +655,36 @@ setMethod(".reportProgress",
           }
           )
 
+
 setMethod(".createPermMx",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, maxruns) {
-            x@pmx <- 
+            # create matrix
+            pmx <- 
               matrix(nrow=maxruns+1, ncol=length(x@coef0))
-            x@pmx[1,] <- x@coef0
-            colnames(x@pmx) <- names(x@coef0)
-            return(x@pmx)
+            pmx[1,] <- x@coef0
+            colnames(pmx) <- names(x@coef0)
+            x@pmx <- pmx
+
+            x@psec <- .createMatrixSections(x, pmx)
+            
+            return(x@psec)
           }
           )
 
 setMethod(".createPermMx",
-          signature(x="Gmp.mul"),
+          signature(x="GMPM.mul"),
           function(x, maxruns) {
             nameObject <- deparse(substitute(x))
-            
-            x@pmx <- array(dim=c(maxruns+1, dim(x@coef0)[1], dim(x@coef0)[2]))
+
+            pmx <- array(dim=c(maxruns+1, dim(x@coef0)[1], dim(x@coef0)[2]))
             capture.output(f0 <- origFit(x))
-            x@pmx[1,,] <-coef(f0)
+            pmx[1,,] <-coef(f0)
               
-            dimnames(x@pmx) <- list(run=1:(maxruns+1),
+            dimnames(pmx) <- list(run=1:(maxruns+1),
                                     dv=rownames(x@coef0),
                                     coef=colnames(x@coef0))
+            x@pmx <- pmx
 
             if (!is.null(f0$convergence)) {
               x@convergence <- rep(FALSE, maxruns+1)
@@ -609,14 +696,15 @@ setMethod(".createPermMx",
                       "(see ?update.packages() for instructions).")
               x@convergence <- rep(TRUE, maxruns+1)              
             }
-            assign(nameObject, x, envir=parent.frame())            
 
-            return(x@pmx)
+            x@psec <- .createMatrixSections(x, pmx)
+
+            return(x@psec)
           }
           )
 
 setMethod("getNExceeding",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, y) {
             if (missing(y)) {
               ix <- .getIVix(x)
@@ -624,7 +712,7 @@ setMethod("getNExceeding",
               ix <- y
             }
             if (is.null(x@coef0) || is.null(x@pmx)) {
-              stop("Model must be fit (gmpFit) before extracting results.")
+              stop("Model must be estimated (gmpmEstimate) before extracting results.")
             }
             if (length(setdiff(ix, x@ivix)) > 0) {
               print(names(x@coef0)[setdiff(ix, x@ivix)])
@@ -651,7 +739,7 @@ setMethod("getNExceeding",
 
 
 setMethod("getPValue",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x, y) {
             if (missing(y)) {
               y <- .getIVix(x)
@@ -670,8 +758,8 @@ setMethod("getPValue",
             return(nge/ntot)
           })
 
-setMethod("gmpCoef",
-          signature(x="Gmp"),
+setMethod("gmpmCoef",
+          signature(x="GMPM"),
           function(x) {
             if (is.null(x@coef0)) {
               x@coef0 <- coef(fitOnce(x))
@@ -681,58 +769,95 @@ setMethod("gmpCoef",
           )
 
 #setMethod("coef",
-#          signature(x="Gmp"),
+#          signature(x="GMPM"),
 #          function(x) {
 #            coefficients(x)
 #          })
 
 setMethod("getPermMx",
-          signature(x="Gmp"),
-          function(x) {return(x@pmx)})
+          signature(x="GMPM"),
+          function(x) {return(x@psec)})
 
 setMethod("permute",
-    signature(x = "Gmp"),
-    function (x) 
+    signature(x = "GMPM", thisiv = "character"),
+    function (x, thisiv) 
           {
-                                        ##print("~~~ in Permute (Gmp) ~~~")
-            # if there are any between subjects variables, then
-            # shift around blocks of predictors by subject
-            if (x@nBetween) {
-              if (x@nunits > 1) {
-                ordVec <- sample(1:x@nunits,x@nunits,replace=FALSE)
-              } else {
-                ordVec <- sample(1:length(x@psBetween[,1]),
-                                 length(x@psBetween[,1]),
-                                 replace=FALSE)
-              }
-              #x@lastPerm$between <- ordVec
+            if (x@nBetween > 1) {
+              pa <- x@psBetween[["tiers"]][[thisiv]]
+              xt1 <- x@psBetween[["freqs"]]
+              nTiers <- length(pa)
+              iv.p <- xt1[,thisiv]
+              dfx <- x@df1
 
-              for (k in 1:x@nBetween) {
-                  x@df1[,x@ivBetween[k]] <-
-                    C(rep(x@psBetween[ordVec,x@ivBetween[k]],
-                          x@psBetween[,'Freq']),
-                      attr(x@df1[,x@ivBetween[k]], "contrasts"))
+              nLevels <- length(levels(dfx[,thisiv]))
+              rix <- sample(1:(nLevels*x@minN))
+                                        #rix <- c(7:9,1:3,4:6)
+              for (i in 1:nTiers) {
+                thisTier <- pa[[i]]
+                osel <- rep(NA,length(rix))
+                for (j in 1:length(thisTier)) {
+                  ix1 <- (j-1)*x@minN+1
+                  ix2 <- ix1+x@minN-1
+                  osel[ix1:ix2] <- sample(thisTier[[j]],x@minN,replace=F)
+                }
+                iv.p[osel] <- xt1[osel,thisiv][rix]
               }
-            }
-
-            # if there are within subject variables, shift around conditions
-            if (x@nWithin) {
-              for (k in 1:x@nWithin) {
-                nCols <- dim(x@psWithin[[x@ivWithin[k]]])[2]
-                newv1 <- rep(sample(1:nCols,x@nunits,replace=TRUE),
-                             each=attr(x@psWithin[[x@ivWithin[k]]],
-                               "mtimes"))
-                newv2 <- c(x@psWithin[[x@ivWithin[k]]][,newv1])
-                newv <- rep(newv2, each=attr(x@psWithin[[x@ivWithin[k]]],
-                                     "meach"))
-                newv <- factor(newv,
-                               levels=levels(x@df1[,x@ivWithin[k]]))
-                newv <- rep(newv, x@psWithin$ps[,'Freq'])
-                x@df1[,x@ivWithin[k]] <-
-                  C(newv, attr(x@df1[,x@ivWithin[k]], "contrasts"))
-              }
+              iv.p2 <- rep(iv.p, xt1[,ncol(xt1)])
+              contrasts(iv.p2) <- contrasts(xt1[,thisiv])
+              x@df1[,thisiv] <- iv.p2
+            } else {
+              if (x@nBetween == 1) {
+                # only one between variable; this is easy
+                frq <- x@psBetween[["freqs"]]
+                iv.p0 <- sample(frq[,x@ivBetween[1]])
+                iv.p <- rep(iv.p0,frq[,ncol(frq)])
+                contrasts(iv.p) <- contrasts(x@df1[,x@ivBetween[1]])
+                x@df1[,x@ivBetween[1]] <- iv.p
+              } else {}
             }
             
+            return(invisible(x))
+          }
+          )
+
+setMethod("permute",
+    signature(x = "GMPM", thisiv = "missing"),
+    function (x) 
+          {
+            
+            frq <- x@psWithin[["freqs"]]
+            nReps <- x@psWithin[["nReps"]]
+            for (i in 1:x@nWithin) {
+              tiv <- x@ivWithin[i]
+              tsch <- x@psWithin[["scheme"]][[tiv]]
+              psch <- apply(tsch,2,sample)
+              iv.p0 <- frq[,tiv]
+              contrasts(iv.p0) <- contrasts(x@df1[,tiv])
+
+              if (x@nBetween > 0) {
+                psmx <- apply(x@psWithin[["smx"]],
+                              2,permuteNA)[1:x@minN,]
+
+                # for each between-s cell
+                for (j in 1:ncol(psmx)) {
+                  for (k in 1:ncol(psch)) {
+                    sid <- x@psWithin[["cellfreqs"]][psmx[k,j],x@munit]
+                    lvec <- frq[,x@munit]==sid
+                    iv.p0[lvec] <- rep(psch[,k],each=nReps[tiv])
+                  }
+                }
+              } else {
+                iv.px <- as.vector(apply(psch,2,rep,x@nwrep[i]))
+                iv.p0 <- rep(iv.px,each=nReps[tiv])
+                iv.p0 <- factor(iv.p0, levels=levels(x@df1[,tiv]))
+                contrasts(iv.p0) <- contrasts(x@df1[,tiv])
+              }
+
+              iv.p <- rep(iv.p0, frq[,ncol(frq)])
+              contrasts(iv.p) <- contrasts(x@df1[,tiv])
+              x@df1[,tiv] <- iv.p
+            }
+
             return(invisible(x))
           }
           )
@@ -740,14 +865,14 @@ setMethod("permute",
 ###############################
 
 setMethod("origFit",
-          signature(object = "Gmp"),
+          signature(object = "GMPM"),
           function (object) {
             return(eval(as.call(object@fitcall)))
           }
           )
 
 setMethod(".getIVix",
-          signature(x = "Gmp"),
+          signature(x = "GMPM"),
           function (x) {
             return(object@ivix)
           }
@@ -756,7 +881,7 @@ setMethod(".getIVix",
           #####################
 
 setMethod(".parseFormula",
-          signature(object = "Gmp"),
+          signature(object = "GMPM"),
           function(object, formula)
           {
             #print("~~~ in .parseFormula ~~~")
@@ -784,7 +909,7 @@ setMethod(".parseFormula",
           )
 
 setMethod(".checkMultilevel",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object)
           {
             #print("~~~ in .checkMultilevel ~~~")            
@@ -806,11 +931,11 @@ setMethod(".checkMultilevel",
                 if (object@nunits == dim(object@df1)[1])
                   {
                     #cat("Warning: Only one observation per sampling unit; data are single-level.\nGrouping factor will be ignored.", "\n")
-                    stop("only one observation per sampling unit; your data are single-level.\ngmpm not yet configured for single-level data; please wait until next version.")
-                    object@nunits <- 1
-                    object@mform <- object@dform
-                    object@munit <- ""
-                  }
+                    #stop("only one observation per sampling unit; your data are single-level.\ngmpm not yet configured for single-level data; please wait until next version.")
+                    #object@nunits <- 1
+                    #object@mform <- object@dform
+                    #object@munit <- ""
+                  } else {}
               } else {
                 stop("No grouping factor supplied.\n gmpm not configured to handle single-level data; please wait for next version.")
                 cat("No conditioning variable specified in model; assuming data are not multilevel.\n")
@@ -822,7 +947,7 @@ setMethod(".checkMultilevel",
           )
 
 setMethod(".getDesign",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object)
           {
             #print("~~~ in .getDesign ~~~")
@@ -901,13 +1026,13 @@ setMethod(".getDesign",
           )
 
 setMethod(".buildFitCall",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object, arg.exclude=c(), ocall)
           {
-            #print("~~~ in .buildFitCall (Gmp)~~~")            
+            #print("~~~ in .buildFitCall (GMPM)~~~")            
             # build function call (common to all classes) ################
             # this function is only invoked by the '.buildFitCall'
-            # functions for the child classes (Gmp.mul, Gmp.user).
+            # functions for the child classes (GMPM.mul, GMPM.user).
             #
             # The current function handles situations common to all
             # classes, and passes the result back to the child class.
@@ -915,14 +1040,14 @@ setMethod(".buildFitCall",
             # Note that this function does not store the call in the object;
             # this is handled by the 'child' class.
 
-            gmp.args <- c("gmpControl", "ivars")
+            gmpm.args <- c("gmpmControl", "ivars")
             # note: update the above line when new arguments are
-            # introduced to GMP to avoid them being passed along
+            # introduced to GMPM to avoid them being passed along
             # to fitting function.
             
-            # get rid of gmp-specific arguments
+            # get rid of gmpm-specific arguments
             ocall <- ocall[c(TRUE, !(names(ocall[2:length(ocall)]) %in%
-                               c(arg.exclude, gmp.args)))]
+                               c(arg.exclude, gmpm.args)))]
             mcl <- c(list(fun="user"), as.list(ocall[2:length(ocall)]))
             mcl$formula <- object@dform
             mcl$data <- quote(object@df1)
@@ -933,10 +1058,10 @@ setMethod(".buildFitCall",
           )
 
 setMethod(".buildFitCall",
-          signature(object="Gmp.glm"),
+          signature(object="GMPM.glm"),
           function(object, arg.exclude=c(), ocall)
           {
-            #print("~~~ in .buildFitCall (Gmp.glm)~~~")                        
+            #print("~~~ in .buildFitCall (GMPM.glm)~~~")                        
 
             ncall <- callNextMethod(object=object, arg.exclude=c(),
                            ocall=ocall)
@@ -946,10 +1071,10 @@ setMethod(".buildFitCall",
           )
 
 setMethod(".buildFitCall",
-          signature(object="Gmp.mul"),
+          signature(object="GMPM.mul"),
           function(object, arg.exclude=c(), ocall)
           {
-            #print("~~~ in .buildFitCall (Gmp.mul)~~~")
+            #print("~~~ in .buildFitCall (GMPM.mul)~~~")
             # build function call (common to all classes) ################
 
             ncall <- callNextMethod(object=object, arg.exclude=c("family"),
@@ -961,34 +1086,34 @@ setMethod(".buildFitCall",
           )
 
 setMethod(".buildFitCall",
-          signature(object="Gmp.user"),
+          signature(object="GMPM.user"),
           function(object, arg.exclude=c(), ocall)
           {
-            #print("~~~ in .buildFitCall (Gmp.user)~~~")
+            #print("~~~ in .buildFitCall (GMPM.user)~~~")
 
             ncall <- callNextMethod(object=object, arg.exclude=c("family"),
                            ocall=ocall)
             
-            stop("user-defined gmp objects not yet implemented.\n",
-                 "Please wait for next version of GMP package.")
+            stop("user-defined GMPM objects not yet implemented.\n",
+                 "Please wait for next version of gmpm package.")
           }            
           )
 
 setMethod("fitOnce",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object)
           {
-                                        ##print("~~~ in fitOnce (Gmp) ~~~")
+                                        ##print("~~~ in fitOnce (GMPM) ~~~")
             ff <- eval(as.call(object@fitcall))
             return(ff)
           }
           )
 
 setMethod("fitOnce",
-          signature(object="Gmp.mul"),
+          signature(object="GMPM.mul"),
           function(object)
           {
-                                        ##print("~~~ in fitOnce (Gmp) ~~~")
+                                        ##print("~~~ in fitOnce (GMPM) ~~~")
             capture.output(fit1 <- eval(as.call(object@fitcall)))
             if (!is.null(fit1$convergence)) {
               if (fit1$convergence == 1) {
@@ -1003,7 +1128,7 @@ setMethod("fitOnce",
           )
 
 setMethod(".preparePermScheme",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object)
           {
             #print("~~~ in .preparePermScheme ~~~")
@@ -1020,173 +1145,124 @@ setMethod(".preparePermScheme",
             ivBetween <- rnames[object@IVinfo$Type=="between"]
             object@ivWithin <- ivWithin
             object@ivBetween <- ivBetween
+            object@psBetween <- list()
+            object@psWithin <- list()
+            
             id <- object@munit
             x <- object@df1
-            psWithin <- object@psWithin
             
             # sort data by within-subjects variables
             # (this makes perm tests cleaner)            
-            if (nWithin > 0) {
-              x <- .sortByWithin(x, ivWithin)
-            }
-            if (object@nunits > 1) {
-              x <- x[order(x[,id]),]
-            }
+            x <- sortDF(x, c(ivBetween, id, ivWithin))
+            object@df1 <- x
 
+            # create permutation scheme for between subject variables
             # create summary table (xt1) for use in rearranging labels
-            tmpIVvec <- c(ivWithin[nWithin:1], (ivBetween))
-            tmpIVvec <- tmpIVvec[!is.na(tmpIVvec)]
-            if (object@nunits > 1) {
-              xtabs.form <-
-                as.formula(paste("~",paste(tmpIVvec,collapse="+"),
-                                 "+",id,sep=""))
-            } else {
-              xtabs.form <-
-                as.formula(paste("~",paste(tmpIVvec,collapse="+"),sep=""))
-            }
-            xt1 <- as.data.frame(xtabs(xtabs.form, data=x))
-            xt1 <- xt1[xt1$Freq>0,]
+            if (nBetween > 0) {
+              xt1 <- combFreqs(x, c(ivBetween, id))
+              xt2 <- combFreqs(xt1, ivBetween)
+              object@minN <- minN <- min(xt2$N)
+              object@psBetween[["freqs"]] <- xt1
+              
+              if (nBetween > 1) {
+                pTiersB <- list()
+                for (i in 1:nBetween) {
+                  lvl <- levels(xt2[,ivBetween[i]])
+                  xt3 <- combFreqs(xt1, setdiff(ivBetween, ivBetween[i]))
+                  tlist <- list()
+                  for (j in 1:nrow(xt3)) {
 
-            if (nWithin > 0) {
-              xt1 <- .sortByWithin(xt1,ivWithin)
-            }
+                                        # create tier name
+                    flvl <- xt3[j,1:(ncol(xt3)-1)]
+                    labs <- flvl
+                                        # defactorize
+                    for (p in 1:ncol(labs)) {
+                      labs[,p] <- levels(labs[,p])[labs[,p]]
+                    }
+                    tname <- paste(labs,collapse=":")
 
-            if (object@nunits > 1) {
-              xt1 <- xt1[order(xt1[,id]),]
-
-              xtform2 <-
-                as.formula(paste("Freq~",paste(ivBetween,collapse="+"),
-                                 "+",id,sep=""))
-              xt2 <- as.data.frame(xtabs(xtform2,data=xt1))
-              xt2 <- xt2[xt2$Freq>0,]
-              xt2 <- xt2[order(xt2[,id]),]
-              nvec <- xt2[,'Freq']
-              xtform2 <-
-                as.formula(paste("~",paste(ivBetween,collapse="+"),
-                                 "+",id,sep=""))
-              xt3 <- as.data.frame(xtabs(xtform2,data=xt1))
-              xt3 <- xt3[xt3$Freq>0,]
-              xt3 <- xt3[order(xt3[,id]),]
-              nvec1 <- xt3[,'Freq']
-
-              if (sum(nvec1==nvec1[1]) != length(nvec1)) {
-                print(xt3)
-                stop("design is unbalanced.")
-              }
-            } else {
-              xt2 <- xt1
-              nvec <- 1
-            }
-
-            # now handle psWithin
-            if (nWithin > 0) {
-              psWithin$ps <- xt1
-              recPerms <- function(v) {
-                if (length(v)==1) {
-                  return(c(v))
+                    llist <- list()
+                    for (k in 1:length(lvl)) {
+                      flist <- list(lvl[k])
+                      names(flist) <- ivBetween[i]
+                      flist <- c(flist,as.list(labs))
+                      llist[[lvl[k]]] <- getDFix(xt1,flist)
+                    }
+                    tlist[[tname]] <- llist
+                  }
+                  pTiersB[[ivBetween[i]]] <- tlist
                 }
-                lx <- length(v)
-                nPerms <- factorial(lx)
-                mx <- matrix(ncol=lx, nrow=nPerms)
-                f1 <- nPerms / lx
+                object@psBetween[["tiers"]] <- pTiersB
+              } else {}
+              nSubjRand <- minN
+            } else {
+              nSubjRand <- object@nunits
+            }
 
-                if (lx > 8) {
-                  stop("Cannot currently handle IVs with more than 8 levels.")
+            # generate permutation scheme for within factors
+            # TO DO: check the design for missing factor levels
+            # within subject (could be a problem)
+            if (object@nWithin > 0) {
+              xt4 <- combFreqs(x, c(ivBetween, id))
+              xt5 <- combFreqs(x, c(ivBetween, id, ivWithin))
+              wlist <- list()
+              nReps <- rep(1,nWithin)
+              names(nReps) <- ivWithin
+              nwrep <- rep(1, nWithin)
+              nwLevels <- rep(NA, nWithin)
+              for (i in 1:nWithin) {
+                tiv <- ivWithin[i]
+                nwLevels[i] <- nLevels <- length(levels(x[,tiv]))
+                
+                if (i == 1) {
+                  nwrep[i] <- 1
+                } else {
+                  for (j in 1:(i-1)) {
+                    nwrep[i] <- nwrep[i]*nwLevels[j]
+                  }
                 }
                 
-                for (i in 1:lx) {
-                  start <- (i-1)*f1+1
-                  end <- start+f1-1
-                  mx[start:end,1] <- v[i]
-                  mx[start:end,2:lx] <- recPerms(setdiff(v,v[i]))
-                }
-
-                return(mx)
-              }
-              for (i in 1:length(ivWithin)) {
-                psWithin[[ivWithin[i]]] <- t(recPerms(levels(x[,ivWithin[i]])))
-                meach <- 1
-                mtimes <- 1
-                if (i > 1) {
-                  for (m in 1:(i-1)) {
-                    mtimes <- mtimes*length(levels(x[,ivWithin[m]]))
+                mx <- matrix(levels(x[,tiv]),nrow=nLevels,ncol=nSubjRand)
+                wlist[[ivWithin[i]]] <- mx
+                if (i < nWithin) {
+                  for (j in (i+1):nWithin) {
+                    nReps[i] <- nReps[i]*length(levels(x[,ivWithin[j]]))
                   }
-                }
-                if (i<length(ivWithin)) {
-                  for (m in (i+1):length(ivWithin)) {
-                    meach <- meach*length(levels(x[,ivWithin[m]]))
-                  }
-                } else {}                  
-                attr(psWithin[[ivWithin[i]]], "meach") <- meach
-                attr(psWithin[[ivWithin[i]]], "mtimes") <- mtimes
+                } else {}
               }
+              object@nwrep <- nwrep
+              object@psWithin$scheme <- wlist
+              object@psWithin$freqs <- xt5
+              object@psWithin$nReps <- nReps
+              
+              if (nBetween > 0) {
+                maxN <- max(xt2$N)
+                smx <- matrix(nrow=maxN,ncol=nrow(xt2))
+                for (i in 1:nrow(xt2)) {
+                  ix <- xt2[i,-ncol(xt2)]
+                  if (is.factor(ix)) {
+                    ix <- levels(ix)[ix]
+                    names(ix) <- colnames(xt2)[-ncol(xt2)]
+                  } else {}
+                  dfix <- getDFix(xt1,ix)
+                  smx[1:length(dfix),i] <- dfix
+                }
+                object@psWithin[["cellfreqs"]] <- xt1
+                object@psWithin[["smx"]] <- smx
+              } else {}
             }
-            object@nCellsPerUnit <- nvec[1]
-            object@psBetween <- xt2
-            object@df1 <- x
-            object@psWithin <- psWithin
-            
+
             assign(nameObject, object, envir=parent.frame())
             return(invisible(object))            
           }
           )
 
-setMethod("gmpFit",
-          signature(object="Gmp"),
-          function(object,gmpControl)
-          {
-            #print("~~~ in gmpFit (Gmp) ~~~")
-            if (missing(gmpControl)) {
-              gmpControl <- object@gmpControl
-            }
-            if (is.null(object@coef0)) {
-              object@coef0 <- coef(fitOnce(object))
-            }
-            maxruns <- gmpControl$maxruns
-            report.interval <- gmpControl$report.interval
-            outfile <- gmpControl$outfile
-            elapsed <- rep(NA, maxruns)
-
-            object@pmx <- .createPermMx(object, maxruns)
-            
-            if (!is.null(outfile)) {
-              stop("writing to outfile not yet supported; bailing out.\n")
-              .writeFit(object, coef(fitOnce(object)), outfile, FALSE)
-            } else {}
-            
-            for (i in 1:maxruns) {
-              t1 <- proc.time()["elapsed"]
-              x <- permute(object)
-
-              ff <- fitOnce(x)
-              myFit <- coef(ff)
-              .storeFitResult(object, ff, i+1)
-
-              if (!is.null(outfile)) {
-                .writeFit(object, myFit, outfile, TRUE)
-              } else {}
-
-              t2 <- proc.time()["elapsed"]
-              elapsed[i] <- t2-t1
-
-              if (report.interval > 0) {
-                if ((i == maxruns) ||
-                    ((i %% report.interval)==0)) {
-                  .reportProgress(x, myFit, i, maxruns, elapsed[1:i])
-                } else {}
-              } else {}
-            }
-
-            object@ncomp <- i
-            #print("~~~ leaving gmpFit ~~~")            
-            return(object)
-            
-          }
-
-          )
+gmpFit <- function(x,y=NULL) {
+  stop("Function gmpFit superseded by gmpmEstimate as of version 0.4-0.")
+}
 
 setMethod(".getIVix",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x) {
             ivix <- c()
             n <- names(x@coef0)
@@ -1211,7 +1287,7 @@ setMethod(".getIVix",
 
 
 setMethod("permSpace",
-          signature(object="Gmp"),
+          signature(object="GMPM"),
           function(object)  {
             psBetween <- object@psBetween
             nCellsPerUnit <- object@nCellsPerUnit
@@ -1252,13 +1328,123 @@ setMethod("permSpace",
           )
 
 setMethod("coefNames",
-          signature(x="Gmp"),
+          signature(x="GMPM"),
           function(x)  {
             return(names(x@coef0))
           })
 
 setMethod("coefNames",
-          signature(x="Gmp.mul"),
+          signature(x="GMPM.mul"),
           function(x)  {
             return(colnames(x@coef0))
+          })
+
+setMethod("gmpmEstimate",
+          signature(x="GMPM"),
+          function(x,gmpmControl)
+          {
+            #print("~~~ in gmpmFit (GMPM) ~~~")
+            if (missing(gmpmControl)) {
+              gmpmControl <- x@gmpmControl
+            }
+            if (is.null(x@coef0)) {
+              x@coef0 <- coef(fitOnce(x))
+            }
+
+            maxruns <- gmpmControl$maxruns
+            report.interval <- gmpmControl$report.interval
+            outfile <- gmpmControl$outfile
+            elapsed <- rep(NA, maxruns)
+
+            if (!is.null(outfile)) {
+              stop("writing to outfile not yet supported; bailing out.\n")
+              .writeFit(x, coef(fitOnce(x)), outfile, FALSE)
+            } else {}
+
+            # calculate number of estimation sections
+            x@psec <- .createPermMx(x, maxruns)            
+            x@nSections <- x@nBetween + (x@nWithin > 0)
+            if (x@nBetween > 0) {
+              pbnames <- names(x@psec)[1:x@nBetween]
+            } else {}
+            
+            for (i in 1:maxruns) {
+              t1 <- proc.time()["elapsed"]
+
+              if (x@nBetween > 0) {
+                for (j in 1:x@nBetween) {
+                  tiv <- x@ivBetween[j]
+                  x2 <- permute(x,tiv)
+                  myFit <- fitOnce(x2)
+                  .storeFitResult(x, myFit, pbnames[j], i+1)
+                  #x@psec[[pbnames[j]]][i+1,] <- cfs
+                }
+              } else {}
+
+              if (x@nWithin > 0) {
+                x2 <- permute(x)
+                myFit <- fitOnce(x2)
+                .storeFitResult(x, myFit, "within", i+1)
+                #x@psec[["within"]][i+1,] <- cfs
+                #.storeFitResult(x, ff, i+1)
+              } else {}
+
+              if (!is.null(outfile)) {
+                .writeFit(x, myFit, outfile, TRUE)
+              } else {}
+
+              t2 <- proc.time()["elapsed"]
+              elapsed[i] <- t2-t1
+
+              if (report.interval > 0) {
+                if ((i == maxruns) ||
+                    ((i %% report.interval)==0)) {
+                  .reportProgress(x, i, maxruns, elapsed[1:i])
+                } else {}
+              } else {}
+            }
+
+            x@ncomp <- i
+            x@ndigits <- ifelse(x@ncomp > 9, ceiling(log(x@ncomp+1,base=10)), 1)
+
+            #print("~~~ leaving gmpmFit ~~~")            
+            return(x)
+                        
+          })
+
+setMethod(".createMatrixSections",
+          signature(x="GMPM"),
+          function(x,pmx) {
+            psec <- list()
+            # now create matrix sections
+            x@nSections <- x@nBetween + (x@nWithin > 0)
+            sb <- list()
+            if (x@nBetween > 0) {
+              for (i in 1:x@nBetween) {
+                sb[[i]] <- pmx
+              }
+              names(sb) <-
+                paste("between",rownames(x@IVinfo)[x@IVinfo$Type=="between"],
+                      sep=":")
+              psec <- c(sb)
+            }
+                
+            if (x@nWithin > 0) {
+              psec[["within"]] <- pmx
+            } else {}
+
+            x@psec <- psec
+
+            return(psec)            
+          })
+
+setMethod(".collapseMultinomPmx",
+          signature(x="GMPM.mul"),
+          function(x,index) {
+              psec <- list()
+              for (j in 1:length(x@psec)) {
+                psec[[j]] <- x@psec[[j]][,index,]
+              }
+              names(psec) <- names(x@psec)
+              return(psec)
           })

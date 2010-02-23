@@ -1,6 +1,6 @@
 \name{permSpace}
 \alias{permSpace}
-\alias{permSpace,Gmp-method}
+\alias{permSpace,GMPM-method}
 \title{Calculate the Number of Possible Permutations}
 \description{
 Calculates the number of possible permutation based on an analysis of
@@ -10,7 +10,7 @@ the design.
 permSpace(object)
 }
 \arguments{
-  \item{object}{A \code{Gmp} object}
+  \item{object}{A \code{GMPM} object}
 }
 \value{
   A number, possibly +Inf the number of permutations is larger than the

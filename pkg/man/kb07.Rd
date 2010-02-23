@@ -41,35 +41,35 @@ kb07
   multilevel logistic regression.  \emph{Journal of Memory and Language},
     \bold{59}, 457--474.  }
 \author{ Dale J. Barr <dale.barr@ucr.edu> }
-\seealso{ \code{\link{gmp}} }
+\seealso{ \code{\link{gmpm}} }
 
 \examples{
 data(kb07)
 
 # first let's fit the data using a binomial model
 #
-kb07.binom.gmp <- gmpCreate(cbind(T,NT) ~ t1*Speaker*Load | SubjID,
+kb07.binom.gmpm <- gmpmCreate(cbind(T,NT) ~ t1*Speaker*Load | SubjID,
                        "binomial", kb07, ivars=c("Speaker","Load"))
 
 # you will need to increase the number of runs in the command below
 # (to, say, 999) to get sensible results
 
-kb07.binom.gmp <- gmpFit(kb07.binom.gmp, gmpCtrl(maxruns=19))
+kb07.binom.gmpm <- gmpmEstimate(kb07.binom.gmpm, gmpmCtrl(maxruns=19))
 
-summary(kb07.binom.gmp)
+summary(kb07.binom.gmpm)
 
 # now let's do a more powerful multinomial analysis
 # where we break out looks to blank regions and blinks
 # into a separate "junk" category (X)
 
-kb07.mnom.gmp <- gmpCreate(cbind(O,T,X) ~ t1*Speaker*Load | SubjID,
+kb07.mnom.gmpm <- gmpmCreate(cbind(O,T,X) ~ t1*Speaker*Load | SubjID,
                      "multinomial", kb07, ivars=c("Speaker","Load"))
 
 # again, you'll need to increase the number of runs to get something
 # sensible
-kb07.mnom.gmp <- gmpFit(kb07.mnom.gmp, gmpCtrl(maxruns=19))
+kb07.mnom.gmpm <- gmpmEstimate(kb07.mnom.gmpm, gmpmCtrl(maxruns=19))
 
-summary(kb07.mnom.gmp)
+summary(kb07.mnom.gmpm)
 
 }
 

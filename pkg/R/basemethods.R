@@ -1,11 +1,11 @@
-setClass("Gmp",
+setClass("GMPM",
          representation(
                         df1="data.frame", # the model.frame
                         dform="formula", # design formula (including covars)
                         mform="formula", # full model formula
                         munit="character", # multilevel sampling unit
                         nunits="numeric", # number of units sampled
-                        gmpControl="list", # control of fitting functions
+                        gmpmControl="list", # control of fitting functions
                         fitcall="list", # call to fitting function
                         famtype="character", # type of data
                         DVname="character", # name of DV
@@ -15,47 +15,53 @@ setClass("Gmp",
                         nBetween="numeric", # nBetween unit variables
                         ivWithin="character", # list of within IVs
                         ivBetween="character", # list of between IVs
+                        minN="numeric", # nObs in smallest cell in design
                         ivars="vector", # list of names of IVs
                         IVcoef="list", # names of factor vars in glm output
                         covars="character", # list of names of covars
                         coefTerms="list", # names of variables from fit output
                                           # w/interactions separated.
 
-                        psBetween="data.frame", # permn scheme (Betw unit IVs)
+                        psBetween="list", # permn scheme (Betw unit IVs)
                         psWithin="list", # permutation scheme (Within unit IVs)
+                        nwrep="numeric", # n. within reps per withinIV
                         pspace="numeric", # size of permutation space
+                        nSections="numeric", # number of permutation sections for estimation
+                        psec="list", # permutation sections
+                        
                         pmx="matrix", # matrix of permutation coefficients
                         nCellsPerUnit="numeric", # nCells per sampling unit
 
                         ncomp="numeric", # n of runs completed
+                        ndigits="numeric", # n of digits to round p value to
                         "VIRTUAL"), # factor matrix for the model
          
          prototype=prototype(
            nunits=1, nWithin=0, nBetween=0, ncomp=0),
          )
 
-setClass(Class="GmpSummary",
+setClass(Class="GMPMSummary",
          representation(
-                        gmpInfo="list", # misc. info about Gmp object
-                        gmpMainSum="list", # list of data frames
+                        gmpmInfo="list", # misc. info about gmpm object
+                        gmpmMainSum="list", # list of data frames
                                            # with summary info
-                        gmpRegSum="list", # main regression
+                        gmpmRegSum="list", # main regression
                         showReg="logical" # whether to show reg coef?
                         ),
          prototype(showReg=FALSE)
          )
 
 setClass(
-         Class="Gmp.glm",
+         Class="GMPM.glm",
          representation(
                         coef0="numeric", # vector of original coefficients
                         family="list"
                         ),
-         contains="Gmp"
+         contains="GMPM"
          )
 
 setClass(
-         Class="Gmp.mul",
+         Class="GMPM.mul",
          representation(
                         coef0="matrix", # vector of original coefficients
                         family="character",
@@ -63,34 +69,34 @@ setClass(
                         convergence="vector" # did it converge?
                         ),
          prototype(family="multinomial",famtype="multinomial"),
-         contains="Gmp"
+         contains="GMPM"
          )
 
 setClass(
-         Class="Gmp.user",
+         Class="GMPM.user",
          representation(
                         family="character"
                         ),
          prototype(family="user",famtype="user"),
-         contains="Gmp"
+         contains="GMPM"
          )
 
 setMethod("initialize",
-          signature(.Object = "Gmp"),
+          signature(.Object = "GMPM"),
           function (.Object,
                     formula, family, data,
-                    ivars, gmpControl)
+                    ivars, gmpmControl)
           {
-#            print(">>>> initializing (Gmp)")            
+#            print(">>>> initializing (GMPM)")            
             return(.Object)
           }
           )
 
 setMethod("initialize",
-          signature(.Object="Gmp.glm"),
+          signature(.Object="GMPM.glm"),
           function(.Object, family=gaussian, ...)
           {
-#            print(">>>> initializing (Gmp.glm)")
+#            print(">>>> initializing (GMPM.glm)")
             if (is.character(family)) {
               family <- get(family, mode = "function",
                             envir = globalenv())
@@ -127,10 +133,10 @@ setMethod("initialize",
           )
 
 setMethod("initialize",
-          signature(.Object="Gmp.mul"),
+          signature(.Object="GMPM.mul"),
           function(.Object, ...)
           {
-#            print(">>>> initializing (Gmp.mul)")
+#            print(">>>> initializing (GMPM.mul)")
 #            callNextMethod()
             require(nnet)
             return(.Object)            
@@ -138,33 +144,33 @@ setMethod("initialize",
           )
 
 setMethod("initialize",
-          signature(.Object="Gmp.user"),
+          signature(.Object="GMPM.user"),
           function(.Object, ...)
           {
-#            print(">>>> initializing (Gmp.user)")
+#            print(">>>> initializing (GMPM.user)")
             cat("Warning: User must supply fitting function (see ?createCall for details).\n")
             return(.Object)
           }
           )
 
 setMethod("initialize",
-          signature(.Object="GmpSummary"),
-          function(.Object, gmpInfo, gmpMainSum=NULL, gmpRegSum=NULL)
+          signature(.Object="GMPMSummary"),
+          function(.Object, gmpmInfo, gmpmMainSum=NULL, gmpmRegSum=NULL)
           {
-#            print(">>>> initializing (GmpSummary)")
-            .Object@gmpInfo <- gmpInfo
-            if (!is.null(gmpMainSum)) {
-              .Object@gmpMainSum <- gmpMainSum
+#            print(">>>> initializing (GMPMSummary)")
+            .Object@gmpmInfo <- gmpmInfo
+            if (!is.null(gmpmMainSum)) {
+              .Object@gmpmMainSum <- gmpmMainSum
             } else {}
-            if (!is.null(gmpRegSum)) {
-              .Object@gmpRegSum <- gmpRegSum
+            if (!is.null(gmpmRegSum)) {
+              .Object@gmpmRegSum <- gmpmRegSum
             } else {}
             return(.Object)
           }
           )
 
 setMethod("show",
-    signature(object = "Gmp"),
+    signature(object = "GMPM"),
     function (object) 
     {
       xsum <- summary(object)
@@ -174,7 +180,7 @@ setMethod("show",
 )
 
 #setMethod("coef",
-#    signature(object = "Gmp"),
+#    signature(object = "GMPM"),
 #    function (object) 
 #    {
 #      return(gmpCoef(object))
@@ -182,7 +188,7 @@ setMethod("show",
 #)
 
 #setMethod("coefficients",
-#    signature(object = "Gmp"),
+#    signature(object = "GMPM"),
 #    function (object) 
 #    {
 #      return(gmpCoef(object))
@@ -190,11 +196,11 @@ setMethod("show",
 #)
 
 setMethod("show",
-          signature(object = "GmpSummary"),
+          signature(object = "GMPMSummary"),
           function(object)
           {
             cat("\n")
-            x <- object@gmpInfo
+            x <- object@gmpmInfo
             
             if (x$nunits == 1) {
               cat("Single-level data with", x$nobs, "observations.\n\n")
@@ -241,7 +247,7 @@ setMethod("show",
               }
               print(dft)
             } else {
-              x <- object@gmpRegSum
+              x <- object@gmpmRegSum
               if (length(x) > 0) {
                 cat("Summary of Individual Regression Parameters:\n")
                 if (length(x) == 1) {
@@ -265,7 +271,7 @@ setMethod("show",
             cat("\n")
 
                                         # now come the main results
-            mainSum <- object@gmpMainSum
+            mainSum <- object@gmpmMainSum
             nSections <- length(mainSum)
             if (nSections > 0) {
               cat(">>>>>>>>> SUMMARY OF MAIN RESULTS <<<<<<<<<\n\n")
@@ -288,13 +294,13 @@ setMethod("show",
             }
             cat("\n")
 
-            if (object@gmpInfo$ncomp > 1) {
-              cat("All p-values based on", object@gmpInfo$ncomp,
-                  "Monte Carlo samples\n",
-                  "from ", object@gmpInfo$pspace,
-                  "possible permutations.\n\n")
+            if (object@gmpmInfo$ncomp > 1) {
+              cat("All p-values based on", object@gmpmInfo$ncomp,
+                  "Monte Carlo samples\n\n")
+              #"from ", object@gmpmInfo$pspace,
+              #    "possible permutations.\n\n")
               
-              if (object@gmpInfo$ncomp < 999) {
+              if (object@gmpmInfo$ncomp < 999) {
                 cat("Warning: Too few Monte Carlo samples for reliable p-values.\n", "Consider increasing 'maxruns'.\n")
               } else {}
             }
@@ -302,31 +308,31 @@ setMethod("show",
           )
 
 setMethod("summary",
-    signature(object = "Gmp"),
+    signature(object = "GMPM"),
           function (object, showReg=FALSE, ...) 
           {
-#            print("~~~ in summary (Gmp) ~~~")
+#            print("~~~ in summary (GMPM) ~~~")
             x <- object
 
-            gmpInfo <- list()
-            gmpInfo$nunits <- x@nunits
-            gmpInfo$nobs <- dim(x@df1)[1]
-            gmpInfo$munit <- x@munit
-            gmpInfo$DVname <- x@DVname
-            gmpInfo$famtype <- x@famtype
-            gmpInfo$IVinfo <- x@IVinfo
-            gmpInfo$mform <- x@mform
-            gmpInfo$ncomp <- x@ncomp
-            gmpInfo$pspace <- x@pspace
-            gmpInfo$coef0 <- x@coef0
-            gmpInfo$covars <- x@covars
+            gmpmInfo <- list()
+            gmpmInfo$nunits <- x@nunits
+            gmpmInfo$nobs <- dim(x@df1)[1]
+            gmpmInfo$munit <- x@munit
+            gmpmInfo$DVname <- x@DVname
+            gmpmInfo$famtype <- x@famtype
+            gmpmInfo$IVinfo <- x@IVinfo
+            gmpmInfo$mform <- x@mform
+            gmpmInfo$ncomp <- x@ncomp
+            gmpmInfo$pspace <- x@pspace
+            gmpmInfo$coef0 <- x@coef0
+            gmpmInfo$covars <- x@covars
             if (x@famtype == "multinomial") {
-              gmpInfo$DVlevels <- .getDVlevels(x)
+              gmpmInfo$DVlevels <- .getDVlevels(x)
             }
 
             if (x@ncomp <= 1) {
-              xsum <- new("GmpSummary",
-                          gmpInfo)
+              xsum <- new("GMPMSummary",
+                          gmpmInfo)
               xsum@showReg <- FALSE
             } else {
                                         # build main summary.
@@ -339,12 +345,12 @@ setMethod("summary",
               
                                         # build regression summary.
               if (showReg) {
-                gmpRegSum <- getRegSummary(object)
+                gmpmRegSum <- getRegSummary(object)
               } else {
-                gmpRegSum <- data.frame()
+                gmpmRegSum <- data.frame()
               }
 
-              gmpMainSum <- list()
+              gmpmMainSum <- list()
               faclist <-
                 attr(attr(x@df1,"terms"),"factors")[-1,]
               if (is.vector(faclist)) {
@@ -365,16 +371,16 @@ setMethod("summary",
                 nTests <- dim(faclist)[2]
               }
               # build main summary
-              gmpMainSum <-
+              gmpmMainSum <-
                 getMainSummary(x)
 
-              xsum <- new("GmpSummary",
-                          gmpInfo, gmpMainSum, gmpRegSum)
+              xsum <- new("GMPMSummary",
+                          gmpmInfo, gmpmMainSum, gmpmRegSum)
               xsum@showReg = showReg
 
             }
             
-#            print("... exiting summary (Gmp) ...")
+#            print("... exiting summary (GMPM) ...")
             return(xsum)
           }
           )

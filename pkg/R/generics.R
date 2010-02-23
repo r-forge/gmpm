@@ -34,12 +34,12 @@ setGeneric(name=".prepareMainSum",
            def=function(x, byCovar=FALSE) {standardGeneric(".prepareMainSum")})
 
 setGeneric(name=".mainSumProc",
-           def=function(x, faclist, allvars, nTests, pmx) {
+           def=function(x, faclist, allvars, nTests, psec) {
              standardGeneric(".mainSumProc")
            })
 
 setGeneric(name=".regSumProc",
-           def=function(x, pmx, index) {
+           def=function(x, psec, index) {
              standardGeneric(".regSumProc")
            })
 
@@ -64,12 +64,12 @@ setGeneric(name=".getCoefTerms",
            )
 
 setGeneric(name=".storeFitResult",
-           def=function(x, fit, index) {
+           def=function(x, fit, section, index) {
              standardGeneric(".storeFitResult")}
            )
 
 setGeneric(name=".reportProgress",
-           def=function(x, myFit, ix, maxruns, elapsed) {
+           def=function(x, ix, maxruns, elapsed) {
              standardGeneric(".reportProgress")}
            )
 
@@ -79,15 +79,15 @@ setGeneric(name=".createPermMx",
              standardGeneric(".createPermMx")}
            )
 
-setGeneric(name="gmpCoef",
-           def=function(x){standardGeneric("gmpCoef")})
+setGeneric(name="gmpmCoef",
+           def=function(x){standardGeneric("gmpmCoef")})
 
 #setGeneric(name="coef",
 #           def=function(x){standardGeneric("coef")})
 
 setGeneric(
            name="permute",
-           def=function(x){standardGeneric("permute")}
+           def=function(x, thisiv){standardGeneric("permute")}
            )
 
 setGeneric(
@@ -164,11 +164,24 @@ setGeneric(
            )
 
 setGeneric(
-           name="gmpFit",
-           def=function(object,gmpControl){standardGeneric("gmpFit")})
+           name="gmpmFit",
+           def=function(object,gmpmControl){
+             standardGeneric("gmpmFit")})
 
 setGeneric(name="getPermMx",
            def=function(x){standardGeneric("getPermMx")})
 
 setGeneric(name="coefNames",
            def=function(x){standardGeneric("coefNames")})
+
+setGeneric(name="gmpmEstimate",
+           def=function(x,gmpmControl){
+             standardGeneric("gmpmEstimate")})
+
+setGeneric(name=".createMatrixSections",
+           def=function(x,pmx){
+             standardGeneric(".createMatrixSections")})
+
+setGeneric(name=".collapseMultinomPmx",
+           def=function(x,index){
+             standardGeneric(".collapseMultinomPmx")})
