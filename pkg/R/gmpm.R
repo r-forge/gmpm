@@ -887,7 +887,10 @@ setMethod(".parseFormula",
             #print("~~~ in .parseFormula ~~~")
             nameObject <- deparse(substitute(object))
 
-            fstr <- deparse(formula)
+            fstr <- deparse(formula, width.cutoff=500L)
+            if (length(fstr) > 1) {
+              fstr <- paste(fstr, collapse="")
+            } else {}
             object@mform <- formula
 
             fterms <- strsplit(fstr, "~")

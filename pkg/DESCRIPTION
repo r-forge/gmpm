@@ -1,7 +1,7 @@
 Package: gmpm
 Type: Package
 Title: Generalized Multilevel Permutation Models
-Version: 0.4-0
+Version: 0.4-1
 Date: 2010-02-22
 Author: Dale Barr <dalejbarr3@gmail.com>
 Maintainer: Dale Barr <dalejbarr3@gmail.com>
