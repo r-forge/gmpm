@@ -7,7 +7,7 @@ gmp <- function(...) {
 }
 
 gmpmCreate <- function(formula, family, data=parent.frame(), ivars=c(),
-                gmpmControl=gmpmCtrl(), ...)
+                gmpmControl=list(), ...)
 {
   gmpmFormals <- setdiff(names(formals(gmpmCreate)), "...")
   
@@ -57,7 +57,8 @@ gmpmCreate <- function(formula, family, data=parent.frame(), ivars=c(),
     }
   else {}
   
-  x@gmpmControl <- gmpmControl
+  x@gmpmControl <- .gmpmCtrl()
+  .setOpts(x, gmpmControl)
   
   .parseFormula(x, formula)
 
@@ -102,13 +103,13 @@ gmpmCreate <- function(formula, family, data=parent.frame(), ivars=c(),
   x@coefTerms <- .getCoefTerms(x)  
 
   x@ivix <- .getIVix(x)
- 
+  
   return(x)
 }
   
 
 gmpm <- function(formula, family, data=parent.frame(), ivars=c(),
-                gmpmControl=gmpmCtrl(), ...)
+                gmpmControl=list(), ...)
 {
   mc <- match.call()
   mc[[1]] <- gmpmCreate
@@ -119,12 +120,16 @@ gmpm <- function(formula, family, data=parent.frame(), ivars=c(),
   # fit the object
   return(gmpmEstimate(x))
 }
-  
-gmpmCtrl <- function(maxruns = 999, report.interval=10,
-                        outfile = NULL)
+
+gmpmCtrl <- function(...) {
+  stop("gmpmCtrl function deprecated as of gmpm version 0.5-1.")
+}
+
+.gmpmCtrl <- function(maxruns = 999, report.interval=10,
+                        outfile = NULL, nCores="all")
 {
   return(list(maxruns=maxruns, report.interval=report.interval,
-              outfile=outfile))
+              outfile=outfile, nCores=nCores))
 }
 
 .getIVtypes <- function(x, ivars, munit)
@@ -193,4 +198,40 @@ gmpmCtrl <- function(maxruns = 999, report.interval=10,
     } else {}
   }
   return(sigvec)
+}
+
+.calculateCores <- function(gmpmControl = list()) {
+  nCores <- 1
+
+  if (is.null(gmpmControl[["nCores"]])) {
+    nCores <- 1
+  } else {
+    if ("multicore" %in% installed.packages()) {
+      library(multicore)
+      if (gmpmControl[["nCores"]] == "all") {
+        nCores = multicore:::detectCores()
+      } else {
+        if (gmpmControl[["nCores"]] == "all.but.one") {
+          nCores = multicore:::detectCores() - 1
+          if (nCores <= 0) {
+            warning("only one core available; 'all.but.one' option in gmpmControl was ignored")
+            nCores = 1
+          } else {}
+        } else {
+          if (is.numeric(gmpmControl[["nCores"]])) {
+            if (gmpmControl[["nCores"]] > multicore:::detectCores()) {
+              nCores = multicore:::detectCores()              
+              warning("more processing cores requested (", gmpmControl[["nCores"]], ") than available (", nCores, "); using only the first ", nCores)
+            } else {
+              nCores = as.integer(gmpmControl[["nCores"]])
+            }
+          } else {
+            stop("unrecognized argument for 'nCores' to gmpmControl")
+          }
+        }
+      }
+    } else {}
+  }
+  
+  return(nCores)
 }

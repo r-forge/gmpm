@@ -12,12 +12,11 @@ function that performs a call to gmpmCreate followed by a call to gmpmEstimate.
 
 \usage{
 
-gmpmCreate(formula, family, data=parent.frame(), ivars,
-gmpmControl=gmpmCtrl(), ...)
+gmpmCreate(formula, family, data=parent.frame(), ivars, gmpmControl=list(), ...)
 
 gmpmEstimate(x, gmpmControl)
 
-gmpm(formula, family, data = parent.frame(), ivars, gmpmControl = gmpmCtrl(), ...)
+gmpm(formula, family, data = parent.frame(), ivars, gmpmControl=list(), ...)
 
 }
 
@@ -44,16 +43,26 @@ gmpm(formula, family, data = parent.frame(), ivars, gmpmControl = gmpmCtrl(), ..
   \sQuote{covariates} and will not be subject to randomization.}
 
   \item{gmpmControl}{A gmpmControl object used to control the fitting
-    function.  This is a list one or more of the following options:
+    function.  This is a list one or more of the following options.  Any
+    option not specified in the list will be given a default value.
 
     \itemize{
-      \item{maxruns}{The number of Monte Carlo runs to be performed.}
+      \item{maxruns}{The number of Monte Carlo runs to be performed
+      (default = 999).}
 
       \item{report.interval}{The run interval at which to intermittently
 	report, during the fitting process, the number of runs completed and
-	the estimated time remaining.}
-      }
-    }
+	the estimated time remaining (default = 10).}
+
+      \item{nCores}{The number of processing cores to use (default =
+	"all").  Using more processors will generally result in faster
+	performance.  This variable can either be the character
+	expression "all" (use all available cores), the character
+	expression "all.but.one" (leave one core out so that the system
+	is not bogged down) or an integer.  The multicore package must
+	be installed, otherwise the number of cores will default to
+	one.}
+    } }
 
     \item{x}{A GMPM object}
     

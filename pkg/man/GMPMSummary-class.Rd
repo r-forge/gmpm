@@ -27,7 +27,7 @@
     \sQuote{showReg} below).}
     
     \item{\code{showReg}:}{Object of class \code{"logical"} whether or
-      not the regression summary is to be calculated and displayed.}
+      not the regression summary is to be calculated and displayed (default=TRUE).}
     
   }
 }

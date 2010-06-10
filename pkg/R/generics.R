@@ -185,3 +185,7 @@ setGeneric(name=".createMatrixSections",
 setGeneric(name=".collapseMultinomPmx",
            def=function(x,index){
              standardGeneric(".collapseMultinomPmx")})
+
+setGeneric(name=".setOpts",
+           def=function(x,opts) {
+             standardGeneric(".setOpts")})

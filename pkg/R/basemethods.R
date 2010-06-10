@@ -34,6 +34,7 @@ setClass("GMPM",
 
                         ncomp="numeric", # n of runs completed
                         ndigits="numeric", # n of digits to round p value to
+                        nCores="integer", # N of available processing cores
                         "VIRTUAL"), # factor matrix for the model
          
          prototype=prototype(
@@ -48,7 +49,7 @@ setClass(Class="GMPMSummary",
                         gmpmRegSum="list", # main regression
                         showReg="logical" # whether to show reg coef?
                         ),
-         prototype(showReg=FALSE)
+         prototype(showReg=TRUE)
          )
 
 setClass(
@@ -309,7 +310,7 @@ setMethod("show",
 
 setMethod("summary",
     signature(object = "GMPM"),
-          function (object, showReg=FALSE, ...) 
+          function (object, showReg=TRUE, ...) 
           {
 #            print("~~~ in summary (GMPM) ~~~")
             x <- object

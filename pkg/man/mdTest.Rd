@@ -38,7 +38,8 @@ df1$Y <- rep(c(0,1,-1),each=2) + rnorm(72)
 summary(aov(Y ~ A*B + Error(SubjID), df1))
 
 # randomization analysis; should increase maxruns to something like 999
-df1.gmpm <- gmpm(Y ~ A*B | SubjID, gaussian, df1, c("A","B"), gmpmCtrl(maxruns=99))
+df1.gmpm <- gmpm(Y ~ A*B | SubjID, gaussian, df1, c("A","B"),
+                 gmpmControl=list(maxruns=99))
 
 # retrieve the permutation matrix
 pmx <- getPermMx(df1.gmpm)[["within"]]

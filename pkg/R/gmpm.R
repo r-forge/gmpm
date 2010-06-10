@@ -632,15 +632,20 @@ setMethod(".reportProgress",
           function(x, ix, maxruns, elapsed) {
             fmtstr1 <- paste("%",nchar(as.character(maxruns)),"d",
                             sep="")
-            fmtstr2 <- paste(fmtstr1, "/", fmtstr1, ":", sep="")
-            stmp1 <- sprintf(fmtstr2, ix, maxruns)
+            ixx <- ifelse( (ix*x@nCores)>x@gmpmControl[["maxruns"]],
+                          x@gmpmControl[["maxruns"]], ix*x@nCores)
+            fmtstr1.2 <- paste("%", nchar(as.character(x@gmpmControl[["maxruns"]])),"d", sep="")
+            fmtstr2 <- paste(fmtstr1, "/", maxruns, " (", fmtstr1.2,
+                             "/", x@gmpmControl[["maxruns"]],
+                             ") ", ":", sep="")
+            stmp1 <- sprintf(fmtstr2, ix, ixx, maxruns)
             #stmp2 <- sprintf("% 1.3f", tmp1)
             if (length(elapsed) > 1) {
               efac <- mean(elapsed)
             } else {
               efac <- elapsed[1]
             }
-            cat(stmp1, sprintf("%1.3fs/run, ", efac))
+            cat(stmp1, sprintf("%1.3fs/sweep, ", efac))
 
             totsecs <- efac*(maxruns-ix)
             cat(sprintf("%02dh:", floor(totsecs / 3600)))
@@ -1347,16 +1352,21 @@ setMethod("gmpmEstimate",
           function(x,gmpmControl)
           {
             #print("~~~ in gmpmFit (GMPM) ~~~")
-            if (missing(gmpmControl)) {
-              gmpmControl <- x@gmpmControl
-            }
+            if (!missing(gmpmControl)) {
+              .setOpts(x, gmpmControl)
+              #gmpmControl <- x@gmpmControl
+            } else {}
+
+            x@nCores <- .calculateCores(x@gmpmControl)
+
             if (is.null(x@coef0)) {
               x@coef0 <- coef(fitOnce(x))
             }
 
-            maxruns <- gmpmControl$maxruns
-            report.interval <- gmpmControl$report.interval
-            outfile <- gmpmControl$outfile
+            maxruns <- x@gmpmControl[["maxruns"]]
+            report.interval <- x@gmpmControl[["report.interval"]]
+            outfile <- x@gmpmControl[["outfile"]]
+            
             elapsed <- rep(NA, maxruns)
 
             if (!is.null(outfile)) {
@@ -1370,31 +1380,64 @@ setMethod("gmpmEstimate",
             if (x@nBetween > 0) {
               pbnames <- names(x@psec)[1:x@nBetween]
             } else {}
-            
-            for (i in 1:maxruns) {
-              t1 <- proc.time()["elapsed"]
 
+            # one "sweep" is defined as a set of parallel runs
+            # on each of the requested processing cores.
+            #
+            # the following code sets up the calls for doing the
+            # fitting over multiple processors.
+            nsweeps <- floor(maxruns / x@nCores)
+            listsize <- rep(x@nCores, nsweeps)
+            if ((maxruns %% x@nCores) > 0) {
+              nsweeps <- nsweeps + 1
+              listsize <- c(listsize, maxruns %% x@nCores)
+            } else {}
+
+            if ("multicore" %in% installed.packages()) {
+              mycall <- "mclapply"
+            } else {
+              mycall <- "lapply"
+            }
+            
+            x.list <- list()
+            for (i in 1:x@nCores) {
+              x.list[[i]] <- x
+            }
+            
+            for (i in 1:nsweeps) {
+              if (i == nsweeps) {
+                x.list <- x.list[1:listsize[i]]
+              } else {}
+              thisrow <- (i-1)*x@nCores+2
+              
+              t1 <- proc.time()["elapsed"]
+              
               if (x@nBetween > 0) {
                 for (j in 1:x@nBetween) {
-                  tiv <- x@ivBetween[j]
-                  x2 <- permute(x,tiv)
-                  myFit <- fitOnce(x2)
-                  .storeFitResult(x, myFit, pbnames[j], i+1)
+                  x2.list <- do.call(mycall, args=list(X=x.list, FUN=permute, thisiv=x@ivBetween[j]))
+                  myFit.list <- do.call(mycall, args=list(X=x2.list, FUN=fitOnce))
+                  for (mm in 1:listsize[i]) {
+                    .storeFitResult(x, myFit.list[[mm]], pbnames[j], thisrow+mm-1)
+                  }
+                  #myFit <- fitOnce(x2)
                   #x@psec[[pbnames[j]]][i+1,] <- cfs
                 }
               } else {}
 
               if (x@nWithin > 0) {
-                x2 <- permute(x)
-                myFit <- fitOnce(x2)
-                .storeFitResult(x, myFit, "within", i+1)
+                x2.list <- do.call(mycall, args=list(X=x.list, FUN=permute))
+                #x2 <- permute(x)
+                myFit.list <- do.call(mycall, args=list(X=x2.list, FUN=fitOnce))
+                for (mm in 1:listsize[i]) {
+                  .storeFitResult(x, myFit.list[[mm]], "within", thisrow+mm-1)
+                }
                 #x@psec[["within"]][i+1,] <- cfs
                 #.storeFitResult(x, ff, i+1)
               } else {}
 
-              if (!is.null(outfile)) {
-                .writeFit(x, myFit, outfile, TRUE)
-              } else {}
+              #if (!is.null(outfile)) {
+              #  .writeFit(x, myFit, outfile, TRUE)
+              #} else {}
 
               t2 <- proc.time()["elapsed"]
               elapsed[i] <- t2-t1
@@ -1402,12 +1445,12 @@ setMethod("gmpmEstimate",
               if (report.interval > 0) {
                 if ((i == maxruns) ||
                     ((i %% report.interval)==0)) {
-                  .reportProgress(x, i, maxruns, elapsed[1:i])
+                  .reportProgress(x, i, nsweeps, elapsed[1:i])
                 } else {}
               } else {}
             }
 
-            x@ncomp <- i
+            x@ncomp <- sum(listsize[1:i])
             x@ndigits <- ifelse(x@ncomp > 9, ceiling(log(x@ncomp+1,base=10)), 1)
 
             #print("~~~ leaving gmpmFit ~~~")            
@@ -1450,4 +1493,29 @@ setMethod(".collapseMultinomPmx",
               }
               names(psec) <- names(x@psec)
               return(psec)
+          })
+
+setMethod(".setOpts",
+          signature(x="GMPM"),
+          function(x, opts) {
+            nameObject <- deparse(substitute(x))            
+            
+            if (!is.null(opts[["nCores"]])) {
+              x@gmpmControl[["nCores"]] <- .calculateCores(opts)
+              x@nCores <- as.integer(x@gmpmControl[["nCores"]])
+            } else {}
+
+            if (!is.null(opts[["maxruns"]])) {
+              x@gmpmControl[["maxruns"]] <- opts[["maxruns"]]
+            } else {}
+
+            if (!is.null(opts[["report.interval"]])) {
+              x@gmpmControl[["report.interval"]] <- opts[["report.interval"]]
+            } else {}
+
+            if (!is.null(opts[["outfile"]])) {
+              x@gmpmControl[["outfile"]] <- opts[["outfile"]]
+            } else {}
+            assign(nameObject, x, envir=parent.frame())            
+            return(invisible(x))
           })

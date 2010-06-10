@@ -54,7 +54,7 @@ kb07.binom.gmpm <- gmpmCreate(cbind(T,NT) ~ t1*Speaker*Load | SubjID,
 # you will need to increase the number of runs in the command below
 # (to, say, 999) to get sensible results
 
-kb07.binom.gmpm <- gmpmEstimate(kb07.binom.gmpm, gmpmCtrl(maxruns=19))
+kb07.binom.gmpm <- gmpmEstimate(kb07.binom.gmpm, list(maxruns=19))
 
 summary(kb07.binom.gmpm)
 
@@ -67,7 +67,7 @@ kb07.mnom.gmpm <- gmpmCreate(cbind(O,T,X) ~ t1*Speaker*Load | SubjID,
 
 # again, you'll need to increase the number of runs to get something
 # sensible
-kb07.mnom.gmpm <- gmpmEstimate(kb07.mnom.gmpm, gmpmCtrl(maxruns=19))
+kb07.mnom.gmpm <- gmpmEstimate(kb07.mnom.gmpm, list(maxruns=19))
 
 summary(kb07.mnom.gmpm)
 
