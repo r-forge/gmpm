@@ -201,8 +201,6 @@ gmpmCtrl <- function(...) {
 }
 
 .calculateCores <- function(gmpmControl = list()) {
-  nCores <- 1
-
   if (is.null(gmpmControl[["nCores"]])) {
     nCores <- 1
   } else {
@@ -230,8 +228,10 @@ gmpmCtrl <- function(...) {
           }
         }
       }
-    } else {}
+    } else {
+      nCores = 1
+    }
   }
-  
-  return(nCores)
+
+  return(as.integer(nCores))
 }
