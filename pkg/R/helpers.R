@@ -126,7 +126,7 @@ gmpmCtrl <- function(...) {
 }
 
 .gmpmCtrl <- function(maxruns = 999, report.interval=10,
-                        outfile = NULL, nCores="all")
+                        outfile = NULL, nCores=1)
 {
   return(list(maxruns=maxruns, report.interval=report.interval,
               outfile=outfile, nCores=nCores))
@@ -208,6 +208,7 @@ gmpmCtrl <- function(...) {
       library(multicore)
       if (gmpmControl[["nCores"]] == "all") {
         nCores = multicore:::detectCores()
+        nCores = 1
       } else {
         if (gmpmControl[["nCores"]] == "all.but.one") {
           nCores = multicore:::detectCores() - 1

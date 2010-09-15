@@ -1184,10 +1184,18 @@ setMethod(".preparePermScheme",
                     flvl <- xt3[j,1:(ncol(xt3)-1)]
                     labs <- flvl
                                         # defactorize
-                    for (p in 1:ncol(labs)) {
-                      labs[,p] <- levels(labs[,p])[labs[,p]]
+
+                    if (is.data.frame(labs)) {
+                      for (p in 1:ncol(labs)) { # error when labs is vector
+                        labs[,p] <- levels(labs[,p])[labs[,p]]
+                      }
+                    } else {
+                      if (is.factor(labs)) {
+                        labs <- levels(labs)[labs]
+                        names(labs) <- colnames(xt3)[1]
+                      } else {}
                     }
-                    tname <- paste(labs,collapse=":")
+                    tname <- paste(labs,collapse=":")                    
 
                     llist <- list()
                     for (k in 1:length(lvl)) {
