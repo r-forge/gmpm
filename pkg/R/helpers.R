@@ -204,22 +204,22 @@ gmpmCtrl <- function(...) {
   if (is.null(gmpmControl[["nCores"]])) {
     nCores <- 1
   } else {
-    if ("multicore" %in% installed.packages()) {
-      library(multicore)
+    if ("parallel" %in% installed.packages()) {
+      library(parallel)
       if (gmpmControl[["nCores"]] == "all") {
-        nCores = multicore:::detectCores()
+        nCores = parallel:::detectCores()
         nCores = 1
       } else {
         if (gmpmControl[["nCores"]] == "all.but.one") {
-          nCores = multicore:::detectCores() - 1
+          nCores = parallel:::detectCores() - 1
           if (nCores <= 0) {
             warning("only one core available; 'all.but.one' option in gmpmControl was ignored")
             nCores = 1
           } else {}
         } else {
           if (is.numeric(gmpmControl[["nCores"]])) {
-            if (gmpmControl[["nCores"]] > multicore:::detectCores()) {
-              nCores = multicore:::detectCores()              
+            if (gmpmControl[["nCores"]] > parallel:::detectCores()) {
+              nCores = parallel:::detectCores()              
               warning("more processing cores requested (", gmpmControl[["nCores"]], ") than available (", nCores, "); using only the first ", nCores)
             } else {
               nCores = as.integer(gmpmControl[["nCores"]])

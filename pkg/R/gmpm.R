@@ -1401,7 +1401,7 @@ setMethod("gmpmEstimate",
               listsize <- c(listsize, maxruns %% x@nCores)
             } else {}
 
-            if ("multicore" %in% installed.packages()) {
+            if ("parallel" %in% installed.packages()) {
               mycall <- "mclapply"
             } else {
               mycall <- "lapply"
